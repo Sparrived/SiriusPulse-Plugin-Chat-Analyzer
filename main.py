@@ -233,7 +233,7 @@ class ChatAnalyzerPlugin(PluginBase):
         logger.info("定时分析完成，共处理 %d 个群", len(group_ids))
 
     @command(
-        "ca_analyze",
+        "ca",
         prefix="/",
         patterns=["ca", "群聊分析", "聊天分析"],
         pattern_type="prefix",
