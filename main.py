@@ -27,9 +27,12 @@ from .analyzers import (
     ImageSender,
     EventChainTracker,
     HourlyActivity,
-    NightOwlIndex,
-    TopicTracker,
-    WordCount,
+    SentimentTracker,
+    SocialGraph,
+    ConversationDynamics,
+    VocabRichness,
+    ContentClassifier,
+    DailyDigest,
     EchoTracker,
 )
 from .render import html_to_png, render_report_html
@@ -53,10 +56,11 @@ class ChatAnalyzerPlugin(PluginBase):
     _plugin_name = "chat_analyzer"
     _plugin_display_name = "群聊分析"
     _plugin_description = (
-        "统计群聊活跃度（话痨榜、长文、图片、表情包、时段分布），"
-        "生成 HTML 图片报告，并由 AI 总结当日话题。"
+        "多维度群聊分析：消息排名、情感分析、社交图谱、对话节奏、"
+        "词汇丰富度、内容分类、事件链、复读金句，"
+        "生成暗黑琥珀终端风格 HTML 图片报告。"
     )
-    _plugin_version = "3.0.0"
+    _plugin_version = "4.0.0"
     _plugin_author = "sirius-chat"
     _plugin_dependencies = ["playwright"]
     _plugin_nl_examples = [
@@ -68,8 +72,9 @@ class ChatAnalyzerPlugin(PluginBase):
         "duration": {"type": "int", "description": "分析时长（分钟），默认 1440（24 小时）"},
     }
     _plugin_prompt_inject = (
-        "群聊分析：群友们可以让我分析群聊活跃度数据，包括话痨榜、"
-        "长文统计、图片和表情包使用统计等，我可以生成带图表的分析报告"
+        "群聊分析：群友们可以让我分析群聊数据，包括消息排名、情感分析、"
+        "社交图谱、对话节奏、词汇丰富度、内容分类等，"
+        "我可以生成暗黑琥珀终端风格的可视化分析报告"
     )
 
     # 定时自动分析：默认每晚 22:00，分析最近 1440 分钟
@@ -474,37 +479,45 @@ class ChatAnalyzerPlugin(PluginBase):
         start_time: datetime,
         end_time: datetime,
     ) -> dict[str, Any]:
-        """执行多维度分析。"""
-        user_analyzers = [
-            ActiveSender(),
-            WordCount(),
-            ImageSender(),
-        ]
-        night_owl = NightOwlIndex()
+        """执行多维度分析（新版：情感/社交/节奏/词汇/内容）。"""
+        # ── 初始化分析器 ──
+        active_sender = ActiveSender()
+        image_sender = ImageSender()
         hourly_analyzer = HourlyActivity()
-        topic_tracker = TopicTracker()
+        sentiment = SentimentTracker()
+        social_graph = SocialGraph()
+        dynamics = ConversationDynamics()
+        vocab = VocabRichness()
+        content_cls = ContentClassifier()
+        digest = DailyDigest()
         event_tracker = EventChainTracker()
         echo_tracker = EchoTracker()
 
-        all_analyzers = [*user_analyzers, hourly_analyzer, night_owl]
+        # ── 单次遍历 ──
         for msg in messages:
-            for a in all_analyzers:
-                a.process(msg)
-            topic_tracker.process(msg)
+            active_sender.process(msg)
+            image_sender.process(msg)
+            hourly_analyzer.process(msg)
+            sentiment.process(msg)
+            social_graph.process(msg)
+            dynamics.process(msg)
+            vocab.process(msg)
+            content_cls.process(msg)
+            digest.process(msg)
             event_tracker.process(msg)
             echo_tracker.process(msg)
 
         event_tracker.finalize()
 
+        # ── 昵称映射 ──
         uid_to_name = self._build_uid_to_name(messages)
-
         all_uids: set[str] = set()
-        for a in user_analyzers:
-            for uid, _ in a.top(10):
-                all_uids.add(uid)
-
-        top_events = event_tracker.top_chains(3)
-        for event in top_events:
+        for uid, _ in active_sender.top(10):
+            all_uids.add(uid)
+        for pair in social_graph.top_pairs(8):
+            all_uids.add(pair["user_a"])
+            all_uids.add(pair["user_b"])
+        for event in event_tracker.top_chains(3):
             for uid in event.get("participant_uids", []):
                 all_uids.add(str(uid))
 
@@ -518,30 +531,49 @@ class ChatAnalyzerPlugin(PluginBase):
             name = await self._resolve_nickname(group_id, uid, adapter)
             uid_to_name[uid] = name or f"qq_{uid}"
 
+        # ── 排名 ──
         rankings: dict[str, list[tuple[str, str, int]]] = {}
-        for a in user_analyzers:
-            entries = [(uid, uid_to_name.get(uid, f"qq_{uid}"), count) for uid, count in a.top(5)]
+        for a in [active_sender, image_sender]:
+            entries = [
+                (uid, uid_to_name.get(uid, f"qq_{uid}"), count)
+                for uid, count in a.top(5)
+            ]
             rankings[a.name] = entries
 
+        # ── 时段数据 ──
         hourly = hourly_analyzer.hourly_data(start_time.hour, end_time.hour)
         hourly_top_users = hourly_analyzer.hourly_top_users(uid_to_name)
 
+        # ── 峰值时段 ──
+        if hourly:
+            peak_h, peak_c = max(hourly, key=lambda x: x[1])
+            digest.set_peak(peak_h, peak_c)
+
+        # ── 事件链 LLM 分析 ──
+        top_events = event_tracker.top_chains(3)
         for event in top_events:
             for msg in event.get("sample_messages", []):
                 uid = msg.get("uid", "")
-                msg["nickname"] = uid_to_name.get(uid, msg.get("nickname", f"qq_{uid}"))
+                msg["nickname"] = uid_to_name.get(
+                    uid, msg.get("nickname", f"qq_{uid}")
+                )
             for msg in event.get("raw_messages", []):
                 uid = msg.get("user_id", "")
-                msg["nickname"] = uid_to_name.get(uid, msg.get("nickname", f"qq_{uid}"))
-
+                msg["nickname"] = uid_to_name.get(
+                    uid, msg.get("nickname", f"qq_{uid}")
+                )
         await self._analyze_event_chains(top_events, uid_to_name, group_id)
 
+        # ── LLM 总结 ──
         commentary = await self._generate_commentary(
-            topic_tracker, rankings, messages, start_time, end_time,
-            night_owl, uid_to_name, top_events, group_id,
+            sentiment, rankings, messages, start_time, end_time,
+            uid_to_name, top_events, group_id, dynamics, vocab,
         )
 
-        top_echoes = echo_tracker.top_echoes(5)
+        # ── 汇总报告 ──
+        velocity_series = dynamics.velocity_series()
+        peak_vel = dynamics.peak_velocity()
+        bursts = dynamics.detect_bursts()
 
         return {
             "group_id": group_id,
@@ -552,8 +584,12 @@ class ChatAnalyzerPlugin(PluginBase):
                 f"{end_time.strftime('%m/%d %H:%M')}"
             ),
             "message_count": len(messages),
+            "unique_users": digest.summary_stats()["unique_users"],
             "rankings": {
-                name: [{"uid": e[0], "name": e[1], "count": e[2]} for e in entries]
+                name: [
+                    {"uid": e[0], "name": e[1], "count": e[2]}
+                    for e in entries
+                ]
                 for name, entries in rankings.items()
             },
             "hourly": [{"hour": h, "count": c} for h, c in hourly],
@@ -564,9 +600,18 @@ class ChatAnalyzerPlugin(PluginBase):
             "self_uid": self_uid,
             "uid_to_name": uid_to_name,
             "top_events": top_events,
-            "top_echoes": top_echoes,
-            "topic_words": [{"word": w, "count": c} for w, c in topic_tracker.top_words(15)],
+            "top_echoes": echo_tracker.top_echoes(5),
             "commentary": commentary,
+            # 新增字段
+            "velocity_series": velocity_series,
+            "peak_velocity": peak_vel,
+            "bursts": bursts,
+            "avg_response_sec": dynamics.avg_response_time(),
+            "sentiment_stats": sentiment.overall_stats(),
+            "social_pairs": social_graph.top_pairs(6),
+            "word_cloud": vocab.global_word_cloud(15),
+            "vocab_rich": vocab.top_rich_users(min_msgs=5, top_n=5),
+            "content_dist": content_cls.distribution(),
         }
 
     # ── HTML 渲染 → 发送图片 ──
@@ -608,6 +653,17 @@ class ChatAnalyzerPlugin(PluginBase):
             plugin_version=self._plugin_version,
             self_uid=report.get("self_uid", ""),
             top_events=report.get("top_events", []),
+            # 新增参数
+            velocity_series=report.get("velocity_series", []),
+            peak_velocity=report.get("peak_velocity", (0, 0)),
+            avg_response_sec=report.get("avg_response_sec", 0.0),
+            sentiment_stats=report.get("sentiment_stats", {}),
+            social_pairs=report.get("social_pairs", []),
+            word_cloud=report.get("word_cloud", []),
+            vocab_rich=report.get("vocab_rich", []),
+            content_dist=report.get("content_dist", {}),
+            total_messages=report.get("message_count", 0),
+            unique_users=report.get("unique_users", 0),
         )
 
         png_bytes = await html_to_png(html)
@@ -626,7 +682,8 @@ class ChatAnalyzerPlugin(PluginBase):
     def _text_report(self, report: dict[str, Any]) -> str:
         lines: list[str] = [
             f"📊 群聊分析报告 ({report['time_range']})",
-            f"总消息数：{report['message_count']} 条",
+            f"总消息数：{report['message_count']} 条 | "
+            f"参与人数：{report.get('unique_users', '?')} 人",
             "",
         ]
         for name, entries in report["rankings"].items():
@@ -636,8 +693,17 @@ class ChatAnalyzerPlugin(PluginBase):
             for e in entries[:3]:
                 lines.append(f"  {e['name']}: {e['count']} 条")
             lines.append("")
+        sent = report.get("sentiment_stats", {})
+        if sent:
+            lines.append(
+                f"💬 情感指数：{sent.get('average', 0):+.2f} "
+                f"(正向{sent.get('positive_ratio', 0):.0f}%)"
+            )
+        resp = report.get("avg_response_sec", 0)
+        if resp > 0:
+            lines.append(f"⏱ 平均响应：{resp:.0f}秒")
         if report.get("commentary"):
-            lines.append(f"📝 群聊总结：{report['commentary']}")
+            lines.append(f"\n📝 群聊总结：{report['commentary']}")
         return "\n".join(lines)
 
     # ── LLM 事件链分析 ──
@@ -863,15 +929,16 @@ class ChatAnalyzerPlugin(PluginBase):
 
     async def _generate_commentary(
         self,
-        tracker: TopicTracker,
+        sentiment: SentimentTracker,
         rankings: dict[str, list[tuple[str, str, int]]],
         messages: list[dict[str, Any]],
         start_time: datetime,
         end_time: datetime,
-        night_owl: NightOwlIndex,
         uid_to_name: dict[str, str],
         top_events: list[dict[str, Any]],
         group_id: str,
+        dynamics: ConversationDynamics,
+        vocab: VocabRichness,
     ) -> str:
         participant_map: dict[str, str] = {}
         for entries in rankings.values():
@@ -882,24 +949,27 @@ class ChatAnalyzerPlugin(PluginBase):
             f"  {uid} | {name}" for uid, name in participant_map.items()
         )
 
-        top_words = tracker.top_words(30)
+        top_words = vocab.global_word_cloud(15)
         word_list = "、".join(f"{w}({c}次)" for w, c in top_words[:15])
 
-        active_rank = rankings.get("话痨之王", [])
+        active_rank = rankings.get("消息之王", [])
         active_summary = "、".join(f"{name}({count}条)" for _, name, count in active_rank[:5])
 
-        heatmap = tracker.topic_heatmap()
-        heatmap_lines: list[str] = []
-        for hour, words in heatmap.items():
-            wl = "、".join(f"{w}({c})" for w, c in words)
-            heatmap_lines.append(f"  {hour:02d}:00 — {wl}")
-        heatmap_text = "\n".join(heatmap_lines[:12])
+        sent_stats = sentiment.overall_stats()
+        sent_text = (
+            f"正向 {sent_stats['positive_ratio']:.0f}% / "
+            f"负向 {sent_stats['negative_ratio']:.0f}% / "
+            f"均值 {sent_stats['average']:+.2f}"
+        )
 
-        night_owl_lines: list[str] = []
-        for uid, ratio in night_owl.night_owl_ratio()[:5]:
-            name = uid_to_name.get(uid, f"qq_{uid}")
-            night_owl_lines.append(f"  {name}: {ratio:.0f}%")
-        night_owl_text = "\n".join(night_owl_lines) if night_owl_lines else "（暂无深夜发言数据）"
+        avg_resp = dynamics.avg_response_time()
+        resp_text = f"{avg_resp:.0f}秒" if avg_resp > 0 else "（数据不足）"
+
+        bursts = dynamics.detect_bursts()
+        burst_lines: list[str] = []
+        for b in bursts[:3]:
+            burst_lines.append(f"  {b['time_str']}（{b['count']}条）")
+        burst_text = "\n".join(burst_lines) if burst_lines else "（暂无爆发期）"
 
         sample_msgs: list[dict[str, Any]] = []
         seen_uids: set[str] = set()
@@ -954,9 +1024,10 @@ class ChatAnalyzerPlugin(PluginBase):
 
 【高频关键词】{word_list}
 
-【话题热力图】{heatmap_text}
+【情感分析】{sent_text}
 
-【夜猫子指数（深夜0-6点发言占比，只列出TOP5）】{night_owl_text}
+【对话节奏】平均响应时间：{resp_text}
+【爆发期】{burst_text}
 
 【热门事件链（按讨论热度排序）】{event_chain_text}
 
