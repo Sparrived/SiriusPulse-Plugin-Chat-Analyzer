@@ -235,7 +235,7 @@ class ChatAnalyzerPlugin(PluginBase):
     @command(
         "ca",
         prefix="/",
-        patterns=["ca", "ca analyze", "ca analyse", "群聊分析", "聊天分析"],
+        patterns=["ca analyse", "ca analyze", "ca", "群聊分析", "聊天分析"],
         pattern_type="prefix",
         render_mode="llm",
         description="分析群聊数据并生成报告",
