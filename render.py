@@ -180,17 +180,17 @@ def build_hourly_section(
     for hour, count in hourly_data:
         ratio = count / max_hourly if max_hourly > 0 else 0
         if ratio >= 0.8:
-            color = "#ff4081"
+            color = "#00E5FF"
         elif ratio >= 0.6:
-            color = "#ff6090"
+            color = "#00B8D4"
         elif ratio >= 0.4:
-            color = "#ff80a0"
+            color = "#0097A7"
         elif ratio >= 0.2:
-            color = "#ffa0b0"
+            color = "#006978"
         elif count > 0:
-            color = "#ffc0c8"
+            color = "#1a3a4a"
         else:
-            color = "#ffe4ec"
+            color = "#0d1a26"
         width_pct = 100 / len(hourly_data)
         bars.append(
             f'<div class="hourly-col" style="width:{width_pct}%;background:{color}"'
