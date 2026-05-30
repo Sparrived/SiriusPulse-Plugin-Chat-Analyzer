@@ -682,13 +682,25 @@ class ChatAnalyzerPlugin(PluginBase):
                 all_uids.add(str(uid))
 
         adapter = self.ctx.adapter
-        self_uid = str(getattr(adapter, "self_id", "") or "")
 
-        # 如果 self_uid 不是有效 QQ 号，尝试从消息数据中查找机器人的 QQ 号
-        if self_uid and not (self_uid.isdigit() and 5 <= len(self_uid) <= 11):
+        # 通过 adapter.get_login_info() 获取机器人的 QQ 号
+        self_uid = ""
+        try:
+            login_info = await adapter.get_login_info()
+            if login_info:
+                self_uid = str(login_info.get("user_id", "") or "")
+                bot_nickname = login_info.get("nickname", "")
+                if self_uid and bot_nickname:
+                    uid_to_name[self_uid] = bot_nickname
+        except Exception as exc:
+            logger.debug("获取机器人登录信息失败: %s", exc)
+            self_uid = ""
+
+        # 如果 get_login_info 失败，尝试从消息数据中查找机器人的 QQ 号
+        if not self_uid or not (self_uid.isdigit() and 5 <= len(self_uid) <= 11):
             bot_qq = self._find_bot_qq(messages, uid_to_name)
             if bot_qq:
-                uid_to_name[self_uid] = uid_to_name.get(bot_qq, bot_qq)
+                self_uid = bot_qq
 
         if self_uid:
             all_uids.discard(self_uid)

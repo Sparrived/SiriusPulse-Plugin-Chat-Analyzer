@@ -2,50 +2,48 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
 
 /* ═══ RESET ═══ */
 *{margin:0;padding:0;box-sizing:border-box;}
 
-/* ═══ PALETTE — 星空梦幻色板 ═══ */
+/* ═══ PALETTE — 柔和星夜色板 ═══ */
 :root{
-  --bg:#080820;
-  --surface:#12123a;
-  --surface-2:#181850;
-  --surface-3:#1e1e5a;
-  --primary:#b48eff;
-  --primary-soft:rgba(180,142,255,0.15);
-  --primary-glow:rgba(180,142,255,0.4);
-  --primary-dim:rgba(180,142,255,0.08);
-  --pink:#ff8ec4;
-  --pink-soft:rgba(255,142,196,0.12);
-  --pink-glow:rgba(255,142,196,0.3);
-  --mint:#7dffc2;
-  --mint-soft:rgba(125,255,194,0.12);
-  --mint-glow:rgba(125,255,194,0.3);
-  --gold:#ffd966;
-  --gold-soft:rgba(255,217,102,0.12);
-  --text:#e0e0f0;
-  --text-dim:#9090b8;
-  --text-muted:#50507a;
-  --border:rgba(180,142,255,0.08);
-  --border-primary:rgba(180,142,255,0.2);
-  --border-pink:rgba(255,142,196,0.2);
-  --sans:'Quicksand','LXGW WenKai','Noto Sans SC','Microsoft YaHei','PingFang SC',sans-serif;
+  --bg:#1a1a2e;
+  --surface:#252545;
+  --surface-2:#2d2d52;
+  --surface-3:#353560;
+  --primary:#9d7cff;
+  --primary-soft:rgba(157,124,255,0.15);
+  --primary-glow:rgba(157,124,255,0.4);
+  --primary-dim:rgba(157,124,255,0.08);
+  --pink:#ff7eb5;
+  --pink-soft:rgba(255,126,181,0.12);
+  --pink-glow:rgba(255,126,181,0.3);
+  --mint:#6ee8b0;
+  --mint-soft:rgba(110,232,176,0.12);
+  --mint-glow:rgba(110,232,176,0.3);
+  --gold:#ffc857;
+  --gold-soft:rgba(255,200,87,0.12);
+  --text:#e8e8f5;
+  --text-dim:#a0a0c5;
+  --text-muted:#686890;
+  --border:rgba(157,124,255,0.08);
+  --border-primary:rgba(157,124,255,0.2);
+  --border-pink:rgba(255,126,181,0.2);
+  --sans:'LXGW WenKai','Noto Sans SC','Microsoft YaHei','PingFang SC',sans-serif;
   --cn:'LXGW WenKai','Noto Sans SC','Microsoft YaHei','PingFang SC',sans-serif;
 }
 
-/* ═══ BODY — 深邃星空 ═══ */
+/* ═══ BODY — 柔和星夜 ═══ */
 body{
   font-family:var(--sans);
   background:
-    radial-gradient(ellipse 600px 400px at 15% 20%,rgba(180,142,255,0.07) 0%,transparent 100%),
-    radial-gradient(ellipse 500px 500px at 80% 15%,rgba(255,142,196,0.05) 0%,transparent 100%),
-    radial-gradient(ellipse 400px 300px at 60% 75%,rgba(125,255,194,0.04) 0%,transparent 100%),
-    radial-gradient(ellipse 300px 300px at 40% 50%,rgba(180,142,255,0.03) 0%,transparent 100%),
+    radial-gradient(ellipse 600px 400px at 15% 20%,rgba(157,124,255,0.07) 0%,transparent 100%),
+    radial-gradient(ellipse 500px 500px at 80% 15%,rgba(255,126,181,0.05) 0%,transparent 100%),
+    radial-gradient(ellipse 400px 300px at 60% 75%,rgba(110,232,176,0.04) 0%,transparent 100%),
+    radial-gradient(ellipse 300px 300px at 40% 50%,rgba(157,124,255,0.03) 0%,transparent 100%),
     var(--bg);
   color:var(--text);
   padding:0;
@@ -62,55 +60,55 @@ body::before{
   position:fixed;
   top:0;left:0;right:0;bottom:0;
   background:
-    radial-gradient(circle 1.2px at 3% 6%,rgba(180,142,255,0.6) 0%,transparent 100%),
+    radial-gradient(circle 1.2px at 3% 6%,rgba(157,124,255,0.6) 0%,transparent 100%),
     radial-gradient(circle 0.8px at 8% 18%,rgba(255,255,255,0.4) 0%,transparent 100%),
-    radial-gradient(circle 1px at 14% 8%,rgba(255,142,196,0.5) 0%,transparent 100%),
+    radial-gradient(circle 1px at 14% 8%,rgba(255,126,181,0.5) 0%,transparent 100%),
     radial-gradient(circle 0.6px at 18% 32%,rgba(255,255,255,0.3) 0%,transparent 100%),
-    radial-gradient(circle 1.5px at 22% 12%,rgba(180,142,255,0.45) 0%,transparent 100%),
-    radial-gradient(circle 0.8px at 28% 28%,rgba(125,255,194,0.35) 0%,transparent 100%),
+    radial-gradient(circle 1.5px at 22% 12%,rgba(157,124,255,0.45) 0%,transparent 100%),
+    radial-gradient(circle 0.8px at 28% 28%,rgba(110,232,176,0.35) 0%,transparent 100%),
     radial-gradient(circle 1px at 32% 5%,rgba(255,255,255,0.5) 0%,transparent 100%),
-    radial-gradient(circle 0.7px at 38% 22%,rgba(255,142,196,0.3) 0%,transparent 100%),
-    radial-gradient(circle 1.2px at 42% 15%,rgba(180,142,255,0.5) 0%,transparent 100%),
+    radial-gradient(circle 0.7px at 38% 22%,rgba(255,126,181,0.3) 0%,transparent 100%),
+    radial-gradient(circle 1.2px at 42% 15%,rgba(157,124,255,0.5) 0%,transparent 100%),
     radial-gradient(circle 0.6px at 48% 35%,rgba(255,255,255,0.3) 0%,transparent 100%),
-    radial-gradient(circle 1px at 52% 8%,rgba(125,255,194,0.4) 0%,transparent 100%),
-    radial-gradient(circle 0.9px at 58% 25%,rgba(180,142,255,0.35) 0%,transparent 100%),
+    radial-gradient(circle 1px at 52% 8%,rgba(110,232,176,0.4) 0%,transparent 100%),
+    radial-gradient(circle 0.9px at 58% 25%,rgba(157,124,255,0.35) 0%,transparent 100%),
     radial-gradient(circle 1.3px at 63% 10%,rgba(255,255,255,0.45) 0%,transparent 100%),
-    radial-gradient(circle 0.7px at 68% 30%,rgba(255,142,196,0.4) 0%,transparent 100%),
-    radial-gradient(circle 1px at 73% 18%,rgba(180,142,255,0.5) 0%,transparent 100%),
+    radial-gradient(circle 0.7px at 68% 30%,rgba(255,126,181,0.4) 0%,transparent 100%),
+    radial-gradient(circle 1px at 73% 18%,rgba(157,124,255,0.5) 0%,transparent 100%),
     radial-gradient(circle 0.8px at 78% 5%,rgba(255,255,255,0.35) 0%,transparent 100%),
-    radial-gradient(circle 1.4px at 82% 22%,rgba(125,255,194,0.45) 0%,transparent 100%),
-    radial-gradient(circle 0.6px at 87% 12%,rgba(180,142,255,0.3) 0%,transparent 100%),
-    radial-gradient(circle 1px at 92% 28%,rgba(255,142,196,0.35) 0%,transparent 100%),
+    radial-gradient(circle 1.4px at 82% 22%,rgba(110,232,176,0.45) 0%,transparent 100%),
+    radial-gradient(circle 0.6px at 87% 12%,rgba(157,124,255,0.3) 0%,transparent 100%),
+    radial-gradient(circle 1px at 92% 28%,rgba(255,126,181,0.35) 0%,transparent 100%),
     radial-gradient(circle 0.9px at 96% 8%,rgba(255,255,255,0.4) 0%,transparent 100%),
-    radial-gradient(circle 1.1px at 5% 55%,rgba(180,142,255,0.4) 0%,transparent 100%),
+    radial-gradient(circle 1.1px at 5% 55%,rgba(157,124,255,0.4) 0%,transparent 100%),
     radial-gradient(circle 0.7px at 12% 68%,rgba(255,255,255,0.3) 0%,transparent 100%),
-    radial-gradient(circle 1px at 25% 62%,rgba(255,142,196,0.35) 0%,transparent 100%),
-    radial-gradient(circle 0.8px at 35% 72%,rgba(125,255,194,0.3) 0%,transparent 100%),
-    radial-gradient(circle 1.3px at 45% 58%,rgba(180,142,255,0.45) 0%,transparent 100%),
+    radial-gradient(circle 1px at 25% 62%,rgba(255,126,181,0.35) 0%,transparent 100%),
+    radial-gradient(circle 0.8px at 35% 72%,rgba(110,232,176,0.3) 0%,transparent 100%),
+    radial-gradient(circle 1.3px at 45% 58%,rgba(157,124,255,0.45) 0%,transparent 100%),
     radial-gradient(circle 0.6px at 55% 78%,rgba(255,255,255,0.35) 0%,transparent 100%),
-    radial-gradient(circle 1px at 65% 65%,rgba(255,142,196,0.4) 0%,transparent 100%),
-    radial-gradient(circle 0.9px at 75% 55%,rgba(180,142,255,0.35) 0%,transparent 100%),
-    radial-gradient(circle 1.2px at 85% 72%,rgba(125,255,194,0.4) 0%,transparent 100%),
+    radial-gradient(circle 1px at 65% 65%,rgba(255,126,181,0.4) 0%,transparent 100%),
+    radial-gradient(circle 0.9px at 75% 55%,rgba(157,124,255,0.35) 0%,transparent 100%),
+    radial-gradient(circle 1.2px at 85% 72%,rgba(110,232,176,0.4) 0%,transparent 100%),
     radial-gradient(circle 0.7px at 92% 62%,rgba(255,255,255,0.3) 0%,transparent 100%),
-    radial-gradient(circle 1px at 8% 85%,rgba(255,142,196,0.35) 0%,transparent 100%),
-    radial-gradient(circle 0.8px at 20% 92%,rgba(180,142,255,0.4) 0%,transparent 100%),
+    radial-gradient(circle 1px at 8% 85%,rgba(255,126,181,0.35) 0%,transparent 100%),
+    radial-gradient(circle 0.8px at 20% 92%,rgba(157,124,255,0.4) 0%,transparent 100%),
     radial-gradient(circle 1.1px at 40% 88%,rgba(255,255,255,0.4) 0%,transparent 100%),
-    radial-gradient(circle 0.6px at 60% 95%,rgba(125,255,194,0.3) 0%,transparent 100%),
-    radial-gradient(circle 1px at 80% 90%,rgba(255,142,196,0.35) 0%,transparent 100%),
-    radial-gradient(circle 0.9px at 95% 85%,rgba(180,142,255,0.4) 0%,transparent 100%);
+    radial-gradient(circle 0.6px at 60% 95%,rgba(110,232,176,0.3) 0%,transparent 100%),
+    radial-gradient(circle 1px at 80% 90%,rgba(255,126,181,0.35) 0%,transparent 100%),
+    radial-gradient(circle 0.9px at 95% 85%,rgba(157,124,255,0.4) 0%,transparent 100%);
   pointer-events:none;
   z-index:0;
 }
 
-/* ═══ CARD — 玻璃水晶卡片 ═══ */
+/* ═══ CARD — 柔和水晶卡片 ═══ */
 .card{
   max-width:1100px;
   margin:0 auto;
   background:
-    radial-gradient(circle 0.8px at 92% 8%,rgba(180,142,255,0.15) 0%,transparent 100%),
-    radial-gradient(circle 0.6px at 8% 85%,rgba(255,142,196,0.1) 0%,transparent 100%),
-    radial-gradient(circle 0.7px at 50% 50%,rgba(180,142,255,0.05) 0%,transparent 100%),
-    rgba(18,18,58,0.92);
+    radial-gradient(circle 0.8px at 92% 8%,rgba(157,124,255,0.15) 0%,transparent 100%),
+    radial-gradient(circle 0.6px at 8% 85%,rgba(255,126,181,0.1) 0%,transparent 100%),
+    radial-gradient(circle 0.7px at 50% 50%,rgba(157,124,255,0.05) 0%,transparent 100%),
+    rgba(30,30,70,0.92);
   border-left:1px solid var(--border-primary);
   border-right:1px solid var(--border);
   border-top:none;
@@ -152,7 +150,7 @@ body::before{
   );
 }
 
-/* ═══ HEADER — 星空标题 ═══ */
+/* ═══ HEADER — 星夜标题 ═══ */
 .header{
   text-align:center;
   margin-bottom:48px;
@@ -229,8 +227,8 @@ body::before{
   background:var(--surface-2);
   border:1px solid var(--border);
   border-radius:16px;
-  padding:24px 22px 20px;
-  margin-bottom:16px;
+  padding:18px 16px 14px;
+  margin-bottom:12px;
   position:relative;
   overflow:hidden;
 }
@@ -308,6 +306,33 @@ body::before{
   left:50%;
 }
 
+/* ═══ GRID-3 三栏布局 ═══ */
+.grid-3{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr;
+  gap:16px;
+  margin-bottom:16px;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:24px 22px 20px;
+  position:relative;
+  overflow:hidden;
+}
+
+.grid-3::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;
+  width:3px;height:100%;
+  background:linear-gradient(180deg,var(--primary),var(--pink),transparent);
+  border-radius:16px 0 0 16px;
+}
+
+.grid-3 .section-inner{
+  min-width:0;
+}
+
 .grid-wide-left{
   display:grid;
   grid-template-columns:3fr 2fr;
@@ -337,7 +362,7 @@ body::before{
   overflow:visible;
 }
 
-/* ═══ METRIC ROW — 水晶指标卡 ═══ */
+/* ═══ METRIC ROW — 水晶指标卡片 ═══ */
 .metric-row{
   display:flex;
   gap:14px;
@@ -406,7 +431,7 @@ body::before{
   font-weight:400;
 }
 
-/* ═══ LEADERBOARD — 排行榜 ═══ */
+/* ═══ LEADERBOARD — 排行榜样式 ═══ */
 .lb-entry{
   display:flex;
   align-items:center;
@@ -489,7 +514,7 @@ body::before{
   margin-left:2px;
 }
 
-/* ═══ RING CHART ═══ */
+/* ═══ RING CHART — 环形图表 ═══ */
 .ring-container{
   display:flex;
   align-items:center;
@@ -520,7 +545,7 @@ body::before{
   box-shadow:0 0 4px currentColor;
 }
 
-/* ═══ HOURLY HEATMAP ═══ */
+/* ═══ HOURLY HEATMAP — 每小时热力图 ═══ */
 .heatmap-grid{
   display:grid;
   grid-template-columns:repeat(24,1fr);
@@ -548,7 +573,7 @@ body::before{
   margin-top:6px;
 }
 
-/* ═══ SENTIMENT BAR ═══ */
+/* ═══ SENTIMENT BAR — 情绪条 ═══ */
 .sentiment-bar{
   display:flex;
   height:20px;
@@ -571,7 +596,7 @@ body::before{
   box-shadow:inset 0 0 10px rgba(255,142,196,0.2);
 }
 
-/* ═══ SOCIAL PAIRS ═══ */
+/* ═══ SOCIAL PAIRS — 社交配对 ═══ */
 .social-pair{
   display:flex;
   align-items:center;
@@ -628,7 +653,7 @@ body::before{
   font-weight:600;
 }
 
-/* ═══ EVENTS — 事件链卡片 ═══ */
+/* ═══ EVENTS — 事件卡片 ═══ */
 .event-card{
   background:var(--surface-3);
   border:1px solid var(--border);
@@ -744,7 +769,7 @@ body::before{
   word-wrap:break-word;
 }
 
-/* ═══ ECHOES — 复读金句 ═══ */
+/* ═══ ECHOES — 复读金句样式 ═══ */
 .echo-card{
   display:flex;
   align-items:center;
@@ -819,7 +844,7 @@ body::before{
   flex-shrink:0;
 }
 
-/* ═══ VOCAB — 词汇丰富度 ═══ */
+/* ═══ VOCAB — 词汇丰富度样式 ═══ */
 .vocab-entry{
   display:flex;
   align-items:center;
@@ -868,7 +893,7 @@ body::before{
   font-family:var(--cn);
 }
 
-/* ═══ WORD CLOUD ═══ */
+/* ═══ WORD CLOUD — 词云样式 ═══ */
 .word-cloud{
   display:flex;
   flex-wrap:wrap;
@@ -888,7 +913,7 @@ body::before{
   white-space:nowrap;
 }
 
-/* ═══ CONTENT MIX ═══ */
+/* ═══ CONTENT MIX — 内容构成样式 ═══ */
 .content-bars{
   display:flex;
   gap:8px;
@@ -928,7 +953,7 @@ body::before{
   font-weight:600;
 }
 
-/* ═══ COMMENTARY ═══ */
+/* ═══ COMMENTARY — 叙事摘要样式 ═══ */
 .commentary{
   font-family:var(--cn);
   font-size:14px;
@@ -937,7 +962,7 @@ body::before{
   letter-spacing:0.3px;
 }
 
-/* ═══ INLINE USER CARDS ═══ */
+/* ═══ INLINE USER CARDS — 内联用户卡片 ═══ */
 .inline-user-card{
   display:inline-flex;
   align-items:center;
@@ -965,7 +990,7 @@ body::before{
   font-weight:600;
 }
 
-/* ═══ FOOTER ═══ */
+/* ═══ FOOTER — 页脚 ═══ */
 .footer{
   text-align:center;
   font-family:var(--sans);
@@ -988,7 +1013,7 @@ body::before{
   opacity:0.3;
 }
 
-/* ═══ EMPTY STATE ═══ */
+/* ═══ EMPTY STATE — 空状态 ═══ */
 .empty-state{
   text-align:center;
   padding:24px;
@@ -1009,7 +1034,7 @@ body::before{
   <!-- HEADER -->
   <div class="header">
     <div class="group-tag">{{group_name}}</div>
-    <h1>Chat Pulse<span class="cursor">✦</span></h1>
+    <h1>聊天脉搏<span class="cursor">✦</span></h1>
     <div class="subtitle">{{time_range}} · {{group_id}}</div>
   </div>
 
@@ -1021,30 +1046,28 @@ body::before{
   <!-- VELOCITY (wide) + LEADERBOARD (narrow) -->
   <div class="grid-wide-left">
     <div class="section-inner">
-      <div class="section-title"><span class="icon">✦</span> Message Velocity</div>
+      <div class="section-title"><span class="icon">✦</span> 消息速率</div>
       {{velocity_svg_html}}
     </div>
     <div class="section-inner">
-      <div class="section-title"><span class="icon">★</span> Leaderboard</div>
+      <div class="section-title"><span class="icon">★</span> 排行榜</div>
       {{leaderboard_html}}
     </div>
   </div>
 
-  <!-- HOURLY HEATMAP + SENTIMENT -->
-  <div class="section">
-    <div class="section-title"><span class="icon">✧</span> Temporal Heatmap</div>
-    {{heatmap_html}}
-    {{sentiment_bar_html}}
-  </div>
-
-  <!-- CONTENT MIX + RING -->
-  <div class="grid-2">
+  <!-- HEATMAP + SENTIMENT + CONTENT MIX + RING (合并为三栏) -->
+  <div class="grid-3">
+    <div class="section-inner grid-3-col-wide">
+      <div class="section-title"><span class="icon">✧</span> 时间热力图</div>
+      {{heatmap_html}}
+      {{sentiment_bar_html}}
+    </div>
     <div class="section-inner">
-      <div class="section-title"><span class="icon">❋</span> Content Mix</div>
+      <div class="section-title"><span class="icon">❋</span> 内容构成</div>
       {{content_mix_html}}
     </div>
     <div class="section-inner">
-      <div class="section-title"><span class="icon">☽</span> Participation</div>
+      <div class="section-title"><span class="icon">☽</span> 参与度</div>
       {{ring_svg_html}}
     </div>
   </div>
@@ -1052,38 +1075,36 @@ body::before{
   <!-- SOCIAL GRAPH + WORD CLOUD/VOCAB -->
   <div class="grid-2">
     <div class="section-inner">
-      <div class="section-title"><span class="icon">✿</span> Social Graph</div>
+      <div class="section-title"><span class="icon">✿</span> 社交图谱</div>
       {{social_graph_html}}
     </div>
     <div class="section-inner">
-      <div class="section-title"><span class="icon">✎</span> Keywords</div>
+      <div class="section-title"><span class="icon">✎</span> 关键词</div>
       {{word_cloud_html}}
       {{vocab_html}}
     </div>
   </div>
 
-  <!-- EVENTS + ECHOES -->
-  <div class="grid-2">
+  <!-- EVENTS + ECHOES + COMMENTARY (合并为三栏) -->
+  <div class="grid-3">
     <div class="section-inner">
-      <div class="section-title"><span class="icon">✦</span> Event Chains</div>
+      <div class="section-title"><span class="icon">✦</span> 事件链</div>
       {{events_html}}
     </div>
     <div class="section-inner">
-      <div class="section-title"><span class="icon">♡</span> Echo Quotes</div>
+      <div class="section-title"><span class="icon">♡</span> 复读金句</div>
       {{echoes_html}}
     </div>
-  </div>
-
-  <!-- COMMENTARY -->
-  <div class="section">
-    <div class="section-title"><span class="icon">☽</span> Narrative Digest</div>
-    <div class="commentary">{{commentary_html}}</div>
+    <div class="section-inner">
+      <div class="section-title"><span class="icon">☽</span> 叙事摘要</div>
+      <div class="commentary">{{commentary_html}}</div>
+    </div>
   </div>
 
   <!-- FOOTER -->
   <div class="footer">
-    ChatAnalyzer v{{plugin_version}} · Sirius Chat<br>
-    Generated {{generated_at}}
+    聊天分析器 v{{plugin_version}} · Sirius Chat<br>
+    生成于 {{generated_at}}
   </div>
 
 </div>
