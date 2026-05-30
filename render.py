@@ -1,6 +1,6 @@
 """HTML 模板渲染 — 新一代数据可视化 + PNG 截图。
 
-设计语言：暗黑琥珀终端风格
+设计语言：星空梦幻可爱风格
   - SVG 速度线图、参与环图
   - 24 小时情感热力图
   - 社交关系图谱
@@ -39,10 +39,23 @@ def _replace(template: str, **kwargs: str) -> str:
     return result
 
 
-def _avatar_url(uid: str) -> str:
-    """生成 QQ 头像 URL。"""
+def _avatar_url(uid: str, uid_to_name: dict[str, str] | None = None) -> str:
+    """生成 QQ 头像 URL。
+
+    如果 uid 本身是有效 QQ 号（5-11 位数字），直接使用。
+    否则尝试从 uid_to_name 映射中查找对应的 QQ 号。
+    """
     if uid and uid.isdigit() and len(uid) >= 5:
         return f"http://q.qlogo.cn/headimg_dl?dst_uin={uid}&spec=640&img_type=jpg"
+    # 尝试从映射中查找：有些 uid 可能不是 QQ 号，但映射中有对应关系
+    if uid_to_name and uid in uid_to_name:
+        mapped_name = uid_to_name[uid]
+        # 如果映射名看起来像 QQ 号
+        if mapped_name.isdigit() and len(mapped_name) >= 5:
+            return (
+                f"http://q.qlogo.cn/headimg_dl?dst_uin={mapped_name}"
+                f"&spec=640&img_type=jpg"
+            )
     return "https://q1.qlogo.cn/g?b=qq&nk=10000&s=640"
 
 
@@ -159,16 +172,16 @@ def build_velocity_svg_html(
             t_str = datetime.fromtimestamp(ts).strftime("%H:%M")
             labels_svg.append(
                 f'<text x="{x:.0f}" y="{pad_t + plot_h + 18}" '
-                f'fill="#3f3f46" font-size="9" text-anchor="middle" '
-                f'font-family="JetBrains Mono,monospace">{t_str}</text>'
+                f'fill="#50507a" font-size="9" text-anchor="middle" '
+                f'font-family="Quicksand,sans-serif">{t_str}</text>'
             )
 
     return f"""
     <svg class="velocity-svg" viewBox="0 0 {svg_w} {svg_h}" preserveAspectRatio="xMidYMid meet">
       <defs>
         <linearGradient id="velGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#e8a849" stop-opacity="0.3"/>
-          <stop offset="100%" stop-color="#e8a849" stop-opacity="0"/>
+          <stop offset="0%" stop-color="#b48eff" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="#b48eff" stop-opacity="0"/>
         </linearGradient>
         <filter id="velGlow">
           <feGaussianBlur stdDeviation="2" result="blur"/>
@@ -177,17 +190,17 @@ def build_velocity_svg_html(
       </defs>
       <!-- 网格线 -->
       <line x1="{pad_l}" y1="{pad_t + plot_h}" x2="{pad_l + plot_w}" y2="{pad_t + plot_h}"
-            stroke="#1f1f28" stroke-width="1"/>
+            stroke="#1a1a50" stroke-width="1"/>
       <line x1="{pad_l}" y1="{pad_t}" x2="{pad_l + plot_w}" y2="{pad_t}"
-            stroke="#1f1f28" stroke-width="0.5" stroke-dasharray="4,4"/>
+            stroke="#1a1a50" stroke-width="0.5" stroke-dasharray="4,4"/>
       <!-- 面积 -->
       <path d="{area_path}" fill="url(#velGrad)"/>
       <!-- 折线 -->
-      <path d="{line_path}" fill="none" stroke="#e8a849" stroke-width="2" filter="url(#velGlow)"/>
+      <path d="{line_path}" fill="none" stroke="#b48eff" stroke-width="2" filter="url(#velGlow)"/>
       <!-- 峰值点 -->
-      <circle cx="{peak_x:.1f}" cy="{peak_y:.1f}" r="4" fill="#e8a849" filter="url(#velGlow)"/>
-      <text x="{peak_x:.1f}" y="{peak_y - 10:.1f}" fill="#e8a849" font-size="10"
-            text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="600">
+      <circle cx="{peak_x:.1f}" cy="{peak_y:.1f}" r="4" fill="#b48eff" filter="url(#velGlow)"/>
+      <text x="{peak_x:.1f}" y="{peak_y - 10:.1f}" fill="#b48eff" font-size="10"
+            text-anchor="middle" font-family="Quicksand,sans-serif" font-weight="600">
         {peak_count} @ {peak_time}
       </text>
       <!-- 时间标签 -->
@@ -203,12 +216,13 @@ def build_velocity_svg_html(
 def build_leaderboard_html(
     rankings: dict[str, list[tuple[str, str, int]]],
     self_uid: str = "",
+    uid_to_name: dict[str, str] | None = None,
 ) -> str:
     """生成消息排名 HTML（只取第一个分析器的排名）。"""
     if not rankings:
         return '<div class="empty-state">暂无排名数据</div>'
 
-    # 取第一个分析器
+    name_map = uid_to_name or {}
     _first_name = next(iter(rankings))
     entries = rankings[_first_name]
     if not entries:
@@ -221,7 +235,7 @@ def build_leaderboard_html(
     for i, (uid, name, count) in enumerate(entries[:5]):
         rc = rank_classes[i] if i < len(rank_classes) else "normal"
         bar_width = (count / max_count * 100) if max_count > 0 else 0
-        avatar = _avatar_url(uid)
+        avatar = _avatar_url(uid, name_map)
 
         rows.append(f"""
     <div class="lb-entry">
@@ -243,14 +257,14 @@ def build_leaderboard_html(
 
 
 def _heatmap_color(count: int, max_count: int) -> str:
-    """根据消息数量返回热力图颜色。"""
+    """根据消息数量返回热力图颜色（星空紫渐变）。"""
     if max_count <= 0 or count <= 0:
-        return "#111116"
+        return "#12123a"
     ratio = count / max_count
-    # 从暗到亮的琥珀色梯度
-    r = int(17 + ratio * 215)
-    g = int(17 + ratio * 151)
-    b = int(22 + ratio * 51)
+    # 从暗紫到亮紫罗兰的渐变
+    r = int(18 + ratio * 162)
+    g = int(24 + ratio * 118)
+    b = int(58 + ratio * 197)
     return f"rgb({r},{g},{b})"
 
 
@@ -303,11 +317,11 @@ def build_sentiment_bar_html(
     neutral_pct = neutral / total_messages * 100
 
     return f"""
-    <div style="margin-top:16px;font-size:10px;color:#71717a;letter-spacing:1px;
+    <div style="margin-top:16px;font-size:10px;color:#9090b8;letter-spacing:1px;
                 margin-bottom:6px;display:flex;justify-content:space-between;">
-      <span style="color:#3ae8c7">POSITIVE {pos_pct:.0f}%</span>
+      <span style="color:#7dffc2">POSITIVE {pos_pct:.0f}%</span>
       <span>NEUTRAL {neutral_pct:.0f}%</span>
-      <span style="color:#ff6b5a">NEGATIVE {neg_pct:.0f}%</span>
+      <span style="color:#ff8ec4">NEGATIVE {neg_pct:.0f}%</span>
     </div>
     <div class="sentiment-bar">
       <div class="sentiment-pos" style="width:{pos_pct:.1f}%"></div>
@@ -330,10 +344,10 @@ def build_content_mix_html(content_dist: dict[str, int]) -> str:
     total = content_dist.get("total", 1) or 1
 
     categories = [
-        ("Text", text_c, "#e8a849"),
-        ("Image", image_c, "#3ae8c7"),
-        ("Link", link_c, "#71717a"),
-        ("Short", short_c, "#ff6b5a"),
+        ("Text", text_c, "#b48eff"),
+        ("Image", image_c, "#7dffc2"),
+        ("Link", link_c, "#9090b8"),
+        ("Short", short_c, "#ff8ec4"),
     ]
     max_val = max(v for _, v, _ in categories) or 1
 
@@ -380,7 +394,7 @@ def build_ring_svg_html(
 
     segments: list[str] = []
     legend_items: list[str] = []
-    colors = ["#e8a849", "#3ae8c7", "#ff6b5a", "#71717a", "#3f3f46"]
+    colors = ["#b48eff", "#ff8ec4", "#7dffc2", "#9090b8", "#50507a"]
     offset = 0.0
 
     items = [(n, c) for _, n, c in top4]
@@ -411,12 +425,12 @@ def build_ring_svg_html(
     <div class="ring-container">
       <svg class="ring-svg" width="140" height="140" viewBox="0 0 140 140">
         {"".join(segments)}
-        <text x="{cx}" y="{cy - 4}" text-anchor="middle" fill="#d4d4d8"
-              font-size="18" font-weight="700" font-family="JetBrains Mono,monospace">
+        <text x="{cx}" y="{cy - 4}" text-anchor="middle" fill="#e0e0f0"
+              font-size="18" font-weight="700" font-family="Quicksand,sans-serif">
           {total_messages}
         </text>
-        <text x="{cx}" y="{cy + 12}" text-anchor="middle" fill="#3f3f46"
-              font-size="8" font-family="JetBrains Mono,monospace" letter-spacing="1">
+        <text x="{cx}" y="{cy + 12}" text-anchor="middle" fill="#50507a"
+              font-size="8" font-family="Quicksand,sans-serif" letter-spacing="1">
           MESSAGES
         </text>
       </svg>
@@ -451,9 +465,9 @@ def build_social_graph_html(
         rows.append(f"""
     <div class="social-pair">
       <div class="social-avatars">
-        <img class="social-avatar" src="{_avatar_url(a_uid)}"
+        <img class="social-avatar" src="{_avatar_url(a_uid, uid_to_name)}"
              alt="{_html_module.escape(a_name, quote=False)}">
-        <img class="social-avatar" src="{_avatar_url(b_uid)}"
+        <img class="social-avatar" src="{_avatar_url(b_uid, uid_to_name)}"
              alt="{_html_module.escape(b_name, quote=False)}">
       </div>
       <div class="social-bar-wrap">
@@ -481,18 +495,18 @@ def build_word_cloud_html(word_cloud: list[tuple[str, int]]) -> str:
     for word, count in word_cloud:
         ratio = count / max_count
         size = int(11 + ratio * 10)
-        # 根据频率渐变颜色
+        # 根据频率渐变颜色（星空紫主题）
         if ratio >= 0.7:
-            color = "#e8a849"
-            border = "rgba(232,168,73,0.3)"
-            bg = "rgba(232,168,73,0.08)"
+            color = "#b48eff"
+            border = "rgba(180,142,255,0.3)"
+            bg = "rgba(180,142,255,0.08)"
         elif ratio >= 0.4:
-            color = "#d4d4d8"
-            border = "rgba(212,212,216,0.15)"
+            color = "#c0b8e0"
+            border = "rgba(180,142,255,0.12)"
             bg = "transparent"
         else:
-            color = "#71717a"
-            border = "rgba(255,255,255,0.04)"
+            color = "#606088"
+            border = "rgba(180,142,255,0.06)"
             bg = "transparent"
 
         tags.append(
@@ -555,10 +569,15 @@ def build_vocab_html(
 # ═══════════════════════════════════════════════════════════════════
 
 
-def build_events_html(top_events: list[dict[str, Any]]) -> str:
+def build_events_html(
+    top_events: list[dict[str, Any]],
+    uid_to_name: dict[str, str] | None = None,
+) -> str:
     """生成事件链 HTML。"""
     if not top_events:
         return '<div class="empty-state">暂未分析到事件链</div>'
+
+    name_map = uid_to_name or {}
 
     rank_labels = ["TOP 1", "TOP 2", "TOP 3"]
     cards: list[str] = []
@@ -593,7 +612,7 @@ def build_events_html(top_events: list[dict[str, Any]]) -> str:
                 uid = msg.get("uid", "")
                 nick = _html_module.escape(msg.get("nickname", "未知"), quote=False)
                 text = _html_module.escape(msg.get("text", ""), quote=False)
-                avatar = _avatar_url(uid)
+                avatar = _avatar_url(uid, name_map)
                 sample_html += f"""
             <div class="event-msg">
               <img class="event-msg-avatar" src="{avatar}">
@@ -645,7 +664,7 @@ def build_echoes_html(
 
         avatars_html = ""
         for uid in uids[:5]:
-            avatar = _avatar_url(uid)
+            avatar = _avatar_url(uid, name_map)
             name = name_map.get(uid, f"qq_{uid}")
             avatars_html += (
                 f'<img class="echo-avatar" src="{avatar}" '
@@ -767,7 +786,9 @@ def render_report_html(
         (sentiment_stats or {}).get("average", 0.0),
     )
     velocity_html = build_velocity_svg_html(velocity_series or [])
-    leaderboard_html = build_leaderboard_html(rankings, self_uid=self_uid)
+    leaderboard_html = build_leaderboard_html(
+        rankings, self_uid=self_uid, uid_to_name=name_map
+    )
     heatmap_html = build_heatmap_html(hourly_data)
     sentiment_html = build_sentiment_bar_html(
         sentiment_stats or {}, total_messages
@@ -777,7 +798,7 @@ def render_report_html(
     social_html = build_social_graph_html(social_pairs or [], name_map)
     word_cloud_html = build_word_cloud_html(word_cloud or [])
     vocab_html = build_vocab_html(vocab_rich or [], name_map)
-    events_html = build_events_html(top_events or [])
+    events_html = build_events_html(top_events or [], uid_to_name=name_map)
     echoes_html = build_echoes_html(top_echoes or [], uid_to_name=name_map)
     commentary_html = build_commentary_html(commentary)
 

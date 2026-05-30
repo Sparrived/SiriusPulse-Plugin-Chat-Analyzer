@@ -562,17 +562,43 @@ class ConversationDynamics:
 class VocabRichness:
     """词汇丰富度 — 独特词比率 + 签名词提取。"""
 
-    def __init__(self) -> None:
+    # 默认屏蔽词（图片/表情相关）
+    DEFAULT_BLOCKED_WORDS = {
+        "动画表情", "jpg", "图片", "png", "gif",
+        "jpeg", "bmp", "webp", "svg", "video",
+        "mp4", "mp3", "wav", "file", "文件",
+        "表情包", "表情", "动图", "静态图", "截图"
+    }
+
+    def __init__(self, blocked_words: set[str] | None = None) -> None:
         # 全局词频
         self._global_words: Counter[str] = Counter()
         # 用户词频 + 独特词
         self._user_words: dict[str, Counter[str]] = {}
         self._user_unique: dict[str, set[str]] = {}
+        # 屏蔽词设置
+        self._blocked_words: set[str] = blocked_words or self.DEFAULT_BLOCKED_WORDS.copy()
 
     def reset(self) -> None:
         self._global_words.clear()
         self._user_words.clear()
         self._user_unique.clear()
+
+    def add_blocked_words(self, words: set[str]) -> None:
+        """添加屏蔽词。"""
+        self._blocked_words.update(words)
+
+    def remove_blocked_words(self, words: set[str]) -> None:
+        """移除屏蔽词。"""
+        self._blocked_words -= words
+
+    def set_blocked_words(self, words: set[str]) -> None:
+        """设置屏蔽词（完全替换）。"""
+        self._blocked_words = words.copy()
+
+    def get_blocked_words(self) -> set[str]:
+        """获取当前屏蔽词列表。"""
+        return self._blocked_words.copy()
 
     def process(self, msg: dict[str, Any]) -> None:
         """提取消息中的词汇并统计。"""
@@ -622,17 +648,19 @@ class VocabRichness:
         return result[:top_n]
 
     def global_word_cloud(self, n: int = 20) -> list[tuple[str, int]]:
-        """返回全局高频词（过滤停用词）。"""
+        """返回全局高频词（过滤停用词和屏蔽词）。"""
         _STOPWORDS = {
             "一个", "这个", "那个", "什么", "怎么", "可以", "没有", "就是",
             "还是", "不是", "已经", "然后", "因为", "所以", "但是", "如果",
             "现在", "知道", "觉得", "时候", "可能", "应该", "这样", "那样",
             "出来", "起来", "一下", "一些", "这些", "那些", "大家", "东西",
         }
+        # 合并停用词和屏蔽词
+        all_filtered = _STOPWORDS | self._blocked_words
         return [
             (w, c)
             for w, c in self._global_words.most_common(n * 3)
-            if w not in _STOPWORDS
+            if w not in all_filtered
         ][:n]
 
 

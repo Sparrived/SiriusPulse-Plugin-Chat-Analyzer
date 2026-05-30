@@ -5,88 +5,117 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
 
 /* ═══ RESET ═══ */
 *{margin:0;padding:0;box-sizing:border-box;}
 
-/* ═══ PALETTE ═══ */
+/* ═══ PALETTE — 星空梦幻色板 ═══ */
 :root{
-  --bg:#060608;
-  --surface:#0c0c10;
-  --surface-2:#111116;
-  --surface-3:#16161c;
-  --amber:#e8a849;
-  --amber-soft:rgba(232,168,73,0.15);
-  --amber-glow:rgba(232,168,73,0.4);
-  --coral:#ff6b5a;
-  --coral-soft:rgba(255,107,90,0.12);
-  --teal:#3ae8c7;
-  --teal-soft:rgba(62,232,199,0.12);
-  --text:#d4d4d8;
-  --text-dim:#71717a;
-  --text-muted:#3f3f46;
-  --border:rgba(255,255,255,0.04);
-  --border-amber:rgba(232,168,73,0.2);
-  --mono:'JetBrains Mono','Cascadia Code','Fira Code','Consolas',monospace;
-  --cn:'LXGW WenKai','Noto Serif SC','Microsoft YaHei','PingFang SC',serif;
+  --bg:#080820;
+  --surface:#12123a;
+  --surface-2:#181850;
+  --surface-3:#1e1e5a;
+  --primary:#b48eff;
+  --primary-soft:rgba(180,142,255,0.15);
+  --primary-glow:rgba(180,142,255,0.4);
+  --primary-dim:rgba(180,142,255,0.08);
+  --pink:#ff8ec4;
+  --pink-soft:rgba(255,142,196,0.12);
+  --pink-glow:rgba(255,142,196,0.3);
+  --mint:#7dffc2;
+  --mint-soft:rgba(125,255,194,0.12);
+  --mint-glow:rgba(125,255,194,0.3);
+  --gold:#ffd966;
+  --gold-soft:rgba(255,217,102,0.12);
+  --text:#e0e0f0;
+  --text-dim:#9090b8;
+  --text-muted:#50507a;
+  --border:rgba(180,142,255,0.08);
+  --border-primary:rgba(180,142,255,0.2);
+  --border-pink:rgba(255,142,196,0.2);
+  --sans:'Quicksand','LXGW WenKai','Noto Sans SC','Microsoft YaHei','PingFang SC',sans-serif;
+  --cn:'LXGW WenKai','Noto Sans SC','Microsoft YaHei','PingFang SC',sans-serif;
 }
 
-/* ═══ BODY ═══ */
+/* ═══ BODY — 深邃星空 ═══ */
 body{
-  font-family:var(--mono);
-  background:var(--bg);
+  font-family:var(--sans);
+  background:
+    radial-gradient(ellipse 600px 400px at 15% 20%,rgba(180,142,255,0.07) 0%,transparent 100%),
+    radial-gradient(ellipse 500px 500px at 80% 15%,rgba(255,142,196,0.05) 0%,transparent 100%),
+    radial-gradient(ellipse 400px 300px at 60% 75%,rgba(125,255,194,0.04) 0%,transparent 100%),
+    radial-gradient(ellipse 300px 300px at 40% 50%,rgba(180,142,255,0.03) 0%,transparent 100%),
+    var(--bg);
   color:var(--text);
   padding:0;
   min-height:100vh;
   position:relative;
   overflow-x:hidden;
   font-size:13px;
-  line-height:1.6;
+  line-height:1.7;
 }
 
+/* ═══ 星星背景 ═══ */
 body::before{
   content:'';
   position:fixed;
   top:0;left:0;right:0;bottom:0;
   background:
-    radial-gradient(circle 1px at 10% 20%,rgba(232,168,73,0.3) 0%,transparent 100%),
-    radial-gradient(circle 1px at 25% 45%,rgba(232,168,73,0.15) 0%,transparent 100%),
-    radial-gradient(circle 1px at 40% 10%,rgba(232,168,73,0.2) 0%,transparent 100%),
-    radial-gradient(circle 1px at 55% 65%,rgba(232,168,73,0.1) 0%,transparent 100%),
-    radial-gradient(circle 1px at 70% 30%,rgba(232,168,73,0.25) 0%,transparent 100%),
-    radial-gradient(circle 1px at 85% 55%,rgba(232,168,73,0.15) 0%,transparent 100%),
-    radial-gradient(circle 1px at 92% 15%,rgba(232,168,73,0.2) 0%,transparent 100%),
-    radial-gradient(circle 1px at 5% 80%,rgba(232,168,73,0.12) 0%,transparent 100%),
-    radial-gradient(circle 1px at 48% 90%,rgba(232,168,73,0.18) 0%,transparent 100%),
-    radial-gradient(circle 1px at 78% 75%,rgba(255,107,90,0.12) 0%,transparent 100%);
+    radial-gradient(circle 1.2px at 3% 6%,rgba(180,142,255,0.6) 0%,transparent 100%),
+    radial-gradient(circle 0.8px at 8% 18%,rgba(255,255,255,0.4) 0%,transparent 100%),
+    radial-gradient(circle 1px at 14% 8%,rgba(255,142,196,0.5) 0%,transparent 100%),
+    radial-gradient(circle 0.6px at 18% 32%,rgba(255,255,255,0.3) 0%,transparent 100%),
+    radial-gradient(circle 1.5px at 22% 12%,rgba(180,142,255,0.45) 0%,transparent 100%),
+    radial-gradient(circle 0.8px at 28% 28%,rgba(125,255,194,0.35) 0%,transparent 100%),
+    radial-gradient(circle 1px at 32% 5%,rgba(255,255,255,0.5) 0%,transparent 100%),
+    radial-gradient(circle 0.7px at 38% 22%,rgba(255,142,196,0.3) 0%,transparent 100%),
+    radial-gradient(circle 1.2px at 42% 15%,rgba(180,142,255,0.5) 0%,transparent 100%),
+    radial-gradient(circle 0.6px at 48% 35%,rgba(255,255,255,0.3) 0%,transparent 100%),
+    radial-gradient(circle 1px at 52% 8%,rgba(125,255,194,0.4) 0%,transparent 100%),
+    radial-gradient(circle 0.9px at 58% 25%,rgba(180,142,255,0.35) 0%,transparent 100%),
+    radial-gradient(circle 1.3px at 63% 10%,rgba(255,255,255,0.45) 0%,transparent 100%),
+    radial-gradient(circle 0.7px at 68% 30%,rgba(255,142,196,0.4) 0%,transparent 100%),
+    radial-gradient(circle 1px at 73% 18%,rgba(180,142,255,0.5) 0%,transparent 100%),
+    radial-gradient(circle 0.8px at 78% 5%,rgba(255,255,255,0.35) 0%,transparent 100%),
+    radial-gradient(circle 1.4px at 82% 22%,rgba(125,255,194,0.45) 0%,transparent 100%),
+    radial-gradient(circle 0.6px at 87% 12%,rgba(180,142,255,0.3) 0%,transparent 100%),
+    radial-gradient(circle 1px at 92% 28%,rgba(255,142,196,0.35) 0%,transparent 100%),
+    radial-gradient(circle 0.9px at 96% 8%,rgba(255,255,255,0.4) 0%,transparent 100%),
+    radial-gradient(circle 1.1px at 5% 55%,rgba(180,142,255,0.4) 0%,transparent 100%),
+    radial-gradient(circle 0.7px at 12% 68%,rgba(255,255,255,0.3) 0%,transparent 100%),
+    radial-gradient(circle 1px at 25% 62%,rgba(255,142,196,0.35) 0%,transparent 100%),
+    radial-gradient(circle 0.8px at 35% 72%,rgba(125,255,194,0.3) 0%,transparent 100%),
+    radial-gradient(circle 1.3px at 45% 58%,rgba(180,142,255,0.45) 0%,transparent 100%),
+    radial-gradient(circle 0.6px at 55% 78%,rgba(255,255,255,0.35) 0%,transparent 100%),
+    radial-gradient(circle 1px at 65% 65%,rgba(255,142,196,0.4) 0%,transparent 100%),
+    radial-gradient(circle 0.9px at 75% 55%,rgba(180,142,255,0.35) 0%,transparent 100%),
+    radial-gradient(circle 1.2px at 85% 72%,rgba(125,255,194,0.4) 0%,transparent 100%),
+    radial-gradient(circle 0.7px at 92% 62%,rgba(255,255,255,0.3) 0%,transparent 100%),
+    radial-gradient(circle 1px at 8% 85%,rgba(255,142,196,0.35) 0%,transparent 100%),
+    radial-gradient(circle 0.8px at 20% 92%,rgba(180,142,255,0.4) 0%,transparent 100%),
+    radial-gradient(circle 1.1px at 40% 88%,rgba(255,255,255,0.4) 0%,transparent 100%),
+    radial-gradient(circle 0.6px at 60% 95%,rgba(125,255,194,0.3) 0%,transparent 100%),
+    radial-gradient(circle 1px at 80% 90%,rgba(255,142,196,0.35) 0%,transparent 100%),
+    radial-gradient(circle 0.9px at 95% 85%,rgba(180,142,255,0.4) 0%,transparent 100%);
   pointer-events:none;
   z-index:0;
 }
 
-body::after{
-  content:'';
-  position:fixed;
-  top:0;left:0;right:0;bottom:0;
-  background:repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 3px,
-    rgba(232,168,73,0.008) 3px,
-    rgba(232,168,73,0.008) 4px
-  );
-  pointer-events:none;
-  z-index:1;
-}
-
-/* ═══ CARD ═══ */
+/* ═══ CARD — 玻璃水晶卡片 ═══ */
 .card{
   max-width:1100px;
   margin:0 auto;
-  background:var(--surface);
-  border-left:1px solid var(--border-amber);
+  background:
+    radial-gradient(circle 0.8px at 92% 8%,rgba(180,142,255,0.15) 0%,transparent 100%),
+    radial-gradient(circle 0.6px at 8% 85%,rgba(255,142,196,0.1) 0%,transparent 100%),
+    radial-gradient(circle 0.7px at 50% 50%,rgba(180,142,255,0.05) 0%,transparent 100%),
+    rgba(18,18,58,0.92);
+  border-left:1px solid var(--border-primary);
   border-right:1px solid var(--border);
-  padding:40px 36px 32px;
+  border-top:none;
+  border-bottom:none;
+  padding:44px 36px 32px;
   position:relative;
   z-index:2;
   min-height:100vh;
@@ -96,17 +125,34 @@ body::after{
   content:'';
   position:absolute;
   top:0;left:0;right:0;
-  height:2px;
+  height:3px;
   background:linear-gradient(90deg,
     transparent 0%,
-    var(--amber) 20%,
-    var(--amber) 80%,
+    var(--primary) 15%,
+    var(--pink) 40%,
+    var(--primary) 60%,
+    var(--mint) 85%,
     transparent 100%
   );
-  box-shadow:0 0 20px var(--amber-glow),0 0 60px rgba(232,168,73,0.15);
+  border-radius:0 0 4px 4px;
+  box-shadow:0 0 20px var(--primary-glow),0 0 60px rgba(255,142,196,0.1);
 }
 
-/* ═══ HEADER ═══ */
+.card::after{
+  content:'';
+  position:absolute;
+  top:3px;left:0;right:0;
+  height:1px;
+  background:linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,255,255,0.15) 30%,
+    rgba(255,255,255,0.25) 50%,
+    rgba(255,255,255,0.15) 70%,
+    transparent 100%
+  );
+}
+
+/* ═══ HEADER — 星空标题 ═══ */
 .header{
   text-align:center;
   margin-bottom:48px;
@@ -114,64 +160,79 @@ body::after{
   position:relative;
 }
 
+.header::before{
+  content:'✦  ·  ✧  ·  ✦';
+  display:block;
+  font-size:10px;
+  color:var(--primary);
+  letter-spacing:8px;
+  margin-bottom:20px;
+  opacity:0.5;
+}
+
 .header::after{
   content:'';
   position:absolute;
   bottom:0;left:50%;
   transform:translateX(-50%);
-  width:120px;height:1px;
-  background:var(--border-amber);
+  width:160px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--primary),var(--pink),var(--primary),transparent);
+  opacity:0.4;
 }
 
 .group-tag{
   display:inline-block;
+  font-family:var(--sans);
   font-size:10px;
   font-weight:600;
-  color:var(--amber);
-  background:var(--amber-soft);
-  border:1px solid var(--border-amber);
-  border-radius:4px;
-  padding:4px 12px;
+  color:var(--primary);
+  background:var(--primary-soft);
+  border:1px solid var(--border-primary);
+  border-radius:20px;
+  padding:5px 16px;
   letter-spacing:2px;
   text-transform:uppercase;
   margin-bottom:16px;
 }
 
 .header h1{
-  font-family:var(--mono);
-  font-size:28px;
+  font-family:var(--sans);
+  font-size:30px;
   font-weight:700;
-  color:var(--amber);
-  letter-spacing:8px;
+  background:linear-gradient(135deg,var(--primary),var(--pink),var(--primary));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  letter-spacing:6px;
   text-transform:uppercase;
   margin-bottom:8px;
-  text-shadow:0 0 30px var(--amber-glow);
 }
 
 .header h1 .cursor{
   display:inline-block;
-  width:2px;height:28px;
-  background:var(--amber);
+  font-size:20px;
+  -webkit-text-fill-color:var(--pink);
   margin-left:4px;
   vertical-align:middle;
-  box-shadow:0 0 8px var(--amber-glow);
+  text-shadow:0 0 12px var(--pink-glow);
 }
 
 .subtitle{
   font-size:11px;
   color:var(--text-dim);
   letter-spacing:3px;
-  font-weight:300;
+  font-weight:400;
 }
 
-/* ═══ SECTION ═══ */
+/* ═══ SECTION (standalone) ═══ */
 .section{
   background:var(--surface-2);
   border:1px solid var(--border);
-  border-radius:2px;
-  padding:24px 20px 20px;
+  border-radius:16px;
+  padding:24px 22px 20px;
   margin-bottom:16px;
   position:relative;
+  overflow:hidden;
 }
 
 .section::before{
@@ -179,14 +240,20 @@ body::after{
   position:absolute;
   top:0;left:0;
   width:3px;height:100%;
-  background:linear-gradient(180deg,var(--amber),transparent);
-  border-radius:2px 0 0 2px;
+  background:linear-gradient(180deg,var(--primary),var(--pink),transparent);
+  border-radius:16px 0 0 16px;
+}
+
+/* ═══ SECTION-INNER (inside grid) ═══ */
+.section-inner{
+  padding:0;
 }
 
 .section-title{
+  font-family:var(--sans);
   font-size:12px;
   font-weight:600;
-  color:var(--amber);
+  color:var(--primary);
   letter-spacing:3px;
   text-transform:uppercase;
   margin-bottom:16px;
@@ -201,12 +268,66 @@ body::after{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  width:22px;height:22px;
-  background:var(--amber-soft);
-  border:1px solid var(--border-amber);
-  border-radius:3px;
-  font-size:11px;
+  width:24px;height:24px;
+  background:var(--primary-soft);
+  border:1px solid var(--border-primary);
+  border-radius:8px;
+  font-size:12px;
   flex-shrink:0;
+  color:var(--primary);
+}
+
+/* ═══ GRID LAYOUTS ═══ */
+.grid-2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-bottom:16px;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:24px 22px 20px;
+  position:relative;
+  overflow:hidden;
+}
+
+.grid-2::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;
+  width:3px;height:100%;
+  background:linear-gradient(180deg,var(--primary),var(--pink),transparent);
+  border-radius:16px 0 0 16px;
+}
+
+.grid-2 .divider{
+  width:1px;
+  background:linear-gradient(180deg,var(--border-primary),var(--border),transparent);
+  position:absolute;
+  top:24px;bottom:24px;
+  left:50%;
+}
+
+.grid-wide-left{
+  display:grid;
+  grid-template-columns:3fr 2fr;
+  gap:16px;
+  margin-bottom:16px;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:24px 22px 20px;
+  position:relative;
+  overflow:hidden;
+}
+
+.grid-wide-left::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;
+  width:3px;height:100%;
+  background:linear-gradient(180deg,var(--primary),var(--pink),transparent);
+  border-radius:16px 0 0 16px;
 }
 
 /* ═══ VELOCITY LINE ═══ */
@@ -216,10 +337,10 @@ body::after{
   overflow:visible;
 }
 
-/* ═══ METRIC ROW ═══ */
+/* ═══ METRIC ROW — 水晶指标卡 ═══ */
 .metric-row{
   display:flex;
-  gap:16px;
+  gap:14px;
   margin-bottom:16px;
   flex-wrap:wrap;
 }
@@ -227,12 +348,14 @@ body::after{
 .metric-box{
   flex:1;
   min-width:100px;
-  background:var(--surface-3);
-  border:1px solid var(--border);
-  border-radius:2px;
-  padding:16px 14px;
+  background:
+    linear-gradient(135deg,rgba(180,142,255,0.06),rgba(24,24,80,0.8));
+  border:1px solid var(--border-primary);
+  border-radius:14px;
+  padding:18px 14px;
   text-align:center;
   position:relative;
+  overflow:hidden;
 }
 
 .metric-box::before{
@@ -240,21 +363,33 @@ body::after{
   position:absolute;
   top:0;left:0;right:0;
   height:1px;
-  background:linear-gradient(90deg,transparent,var(--border-amber),transparent);
+  background:linear-gradient(90deg,transparent,rgba(180,142,255,0.3),var(--pink),rgba(180,142,255,0.3),transparent);
+}
+
+.metric-box::after{
+  content:'';
+  position:absolute;
+  top:4px;right:4px;
+  width:3px;height:3px;
+  border-radius:50%;
+  background:var(--primary);
+  opacity:0.3;
 }
 
 .metric-value{
-  font-family:var(--mono);
+  font-family:var(--sans);
   font-size:28px;
   font-weight:700;
-  color:var(--amber);
+  color:var(--primary);
   line-height:1.1;
   margin-bottom:6px;
-  text-shadow:0 0 20px var(--amber-glow);
+  text-shadow:0 0 20px var(--primary-glow);
 }
 
-.metric-value.coral{color:var(--coral);text-shadow:0 0 20px rgba(255,107,90,0.3);}
-.metric-value.teal{color:var(--teal);text-shadow:0 0 20px rgba(62,232,199,0.3);}
+.metric-value.pink{color:var(--pink);text-shadow:0 0 20px var(--pink-glow);}
+.metric-value.mint{color:var(--mint);text-shadow:0 0 20px var(--mint-glow);}
+.metric-value.coral{color:var(--pink);text-shadow:0 0 20px var(--pink-glow);}
+.metric-value.teal{color:var(--mint);text-shadow:0 0 20px var(--mint-glow);}
 
 .metric-label{
   font-size:9px;
@@ -268,10 +403,10 @@ body::after{
   font-size:10px;
   color:var(--text-muted);
   margin-top:4px;
-  font-weight:300;
+  font-weight:400;
 }
 
-/* ═══ LEADERBOARD ═══ */
+/* ═══ LEADERBOARD — 排行榜 ═══ */
 .lb-entry{
   display:flex;
   align-items:center;
@@ -283,7 +418,7 @@ body::after{
 .lb-entry:last-child{border-bottom:none;}
 
 .lb-rank{
-  font-family:var(--mono);
+  font-family:var(--sans);
   font-size:18px;
   font-weight:700;
   min-width:36px;
@@ -291,9 +426,9 @@ body::after{
   color:var(--text-muted);
 }
 
-.lb-rank.gold{color:var(--amber);}
-.lb-rank.silver{color:#a8a8b0;}
-.lb-rank.bronze{color:#cd7f32;}
+.lb-rank.gold{color:var(--gold);text-shadow:0 0 10px rgba(255,217,102,0.3);}
+.lb-rank.silver{color:#c0b8d8;}
+.lb-rank.bronze{color:#e8a0b8;}
 
 .lb-avatar{
   width:36px;height:36px;
@@ -303,9 +438,9 @@ body::after{
   flex-shrink:0;
 }
 
-.lb-avatar.gold{border-color:var(--amber);box-shadow:0 0 12px rgba(232,168,73,0.3);}
-.lb-avatar.silver{border-color:#a8a8b0;}
-.lb-avatar.bronze{border-color:#cd7f32;}
+.lb-avatar.gold{border-color:var(--gold);box-shadow:0 0 12px rgba(255,217,102,0.25);}
+.lb-avatar.silver{border-color:#c0b8d8;}
+.lb-avatar.bronze{border-color:#e8a0b8;}
 
 .lb-name{
   font-size:13px;
@@ -332,21 +467,20 @@ body::after{
 .lb-bar{
   height:100%;
   border-radius:3px;
-  transition:width 0.6s ease;
 }
 
-.lb-bar.gold{background:linear-gradient(90deg,var(--amber),#f0c060);box-shadow:0 0 8px rgba(232,168,73,0.4);}
-.lb-bar.silver{background:#71717a;}
-.lb-bar.bronze{background:#cd7f32;}
+.lb-bar.gold{background:linear-gradient(90deg,var(--gold),#ffe680);box-shadow:0 0 8px rgba(255,217,102,0.35);}
+.lb-bar.silver{background:linear-gradient(90deg,#8880a8,#c0b8d8);}
+.lb-bar.bronze{background:linear-gradient(90deg,#c080a0,#e8a0b8);}
 .lb-bar.normal{background:var(--text-muted);}
 
 .lb-count{
-  font-family:var(--mono);
+  font-family:var(--sans);
   font-size:12px;
-  color:var(--amber);
+  color:var(--primary);
   min-width:50px;
   text-align:right;
-  font-weight:500;
+  font-weight:600;
 }
 
 .lb-unit{
@@ -383,6 +517,7 @@ body::after{
   width:8px;height:8px;
   border-radius:50%;
   flex-shrink:0;
+  box-shadow:0 0 4px currentColor;
 }
 
 /* ═══ HOURLY HEATMAP ═══ */
@@ -394,14 +529,8 @@ body::after{
 
 .heatmap-cell{
   aspect-ratio:1;
-  border-radius:2px;
+  border-radius:6px;
   position:relative;
-  transition:transform 0.2s;
-}
-
-.heatmap-cell:hover{
-  transform:scale(1.2);
-  z-index:1;
 }
 
 .heatmap-hour{
@@ -423,14 +552,14 @@ body::after{
 .sentiment-bar{
   display:flex;
   height:20px;
-  border-radius:2px;
+  border-radius:10px;
   overflow:hidden;
   margin-top:8px;
 }
 
 .sentiment-pos{
-  background:linear-gradient(90deg,var(--teal),#2dd4a8);
-  box-shadow:inset 0 0 10px rgba(62,232,199,0.3);
+  background:linear-gradient(90deg,var(--mint),#50e8a0);
+  box-shadow:inset 0 0 10px rgba(125,255,194,0.2);
 }
 
 .sentiment-neutral{
@@ -438,8 +567,8 @@ body::after{
 }
 
 .sentiment-neg{
-  background:linear-gradient(90deg,#c0392b,var(--coral));
-  box-shadow:inset 0 0 10px rgba(255,107,90,0.3);
+  background:linear-gradient(90deg,#d060a0,var(--pink));
+  box-shadow:inset 0 0 10px rgba(255,142,196,0.2);
 }
 
 /* ═══ SOCIAL PAIRS ═══ */
@@ -471,40 +600,41 @@ body::after{
 
 .social-arrow{
   font-size:10px;
-  color:var(--amber);
+  color:var(--primary);
   margin:0 4px;
-  opacity:0.6;
+  opacity:0.5;
 }
 
 .social-bar-wrap{
   flex:1;
-  height:4px;
+  height:5px;
   background:var(--surface);
-  border-radius:2px;
+  border-radius:3px;
   overflow:hidden;
 }
 
 .social-bar{
   height:100%;
-  background:linear-gradient(90deg,var(--amber-soft),var(--amber));
-  border-radius:2px;
+  background:linear-gradient(90deg,var(--primary-soft),var(--primary));
+  border-radius:3px;
 }
 
 .social-count{
-  font-family:var(--mono);
+  font-family:var(--sans);
   font-size:11px;
-  color:var(--amber);
+  color:var(--primary);
   min-width:30px;
   text-align:right;
+  font-weight:600;
 }
 
-/* ═══ EVENTS ═══ */
+/* ═══ EVENTS — 事件链卡片 ═══ */
 .event-card{
   background:var(--surface-3);
   border:1px solid var(--border);
-  border-left:3px solid var(--amber);
-  border-radius:2px;
-  padding:14px 16px;
+  border-left:3px solid var(--primary);
+  border-radius:12px;
+  padding:16px 18px;
   margin-bottom:10px;
 }
 
@@ -518,19 +648,20 @@ body::after{
 }
 
 .event-rank{
-  font-family:var(--mono);
+  font-family:var(--sans);
   font-size:9px;
-  font-weight:600;
+  font-weight:700;
   color:var(--bg);
-  background:var(--amber);
-  border-radius:2px;
-  padding:3px 10px;
+  background:linear-gradient(135deg,var(--primary),var(--pink));
+  border-radius:8px;
+  padding:3px 12px;
   letter-spacing:1px;
   flex-shrink:0;
   text-transform:uppercase;
 }
 
 .event-title{
+  font-family:var(--sans);
   font-size:14px;
   font-weight:600;
   color:var(--text);
@@ -540,7 +671,7 @@ body::after{
 .event-meta{
   display:flex;
   gap:14px;
-  font-family:var(--mono);
+  font-family:var(--sans);
   font-size:10px;
   color:var(--text-muted);
   margin-bottom:8px;
@@ -556,11 +687,11 @@ body::after{
 
 .event-tag{
   font-size:9px;
-  font-weight:500;
-  color:var(--amber);
-  background:var(--amber-soft);
-  border:1px solid var(--border-amber);
-  border-radius:2px;
+  font-weight:600;
+  color:var(--primary);
+  background:var(--primary-soft);
+  border:1px solid var(--border-primary);
+  border-radius:10px;
   padding:2px 10px;
   white-space:nowrap;
   letter-spacing:0.5px;
@@ -568,11 +699,11 @@ body::after{
 
 .event-flow{
   font-size:12px;
-  line-height:1.8;
+  line-height:1.9;
   color:var(--text-dim);
-  padding:10px 12px;
+  padding:10px 14px;
   background:var(--surface);
-  border-radius:2px;
+  border-radius:10px;
   border:1px solid var(--border);
 }
 
@@ -601,7 +732,7 @@ body::after{
 .event-msg-nick{
   font-size:10px;
   font-weight:600;
-  color:var(--amber);
+  color:var(--primary);
   margin-bottom:2px;
   display:block;
 }
@@ -613,14 +744,14 @@ body::after{
   word-wrap:break-word;
 }
 
-/* ═══ ECHOES ═══ */
+/* ═══ ECHOES — 复读金句 ═══ */
 .echo-card{
   display:flex;
   align-items:center;
   gap:12px;
   background:var(--surface-3);
   border:1px solid var(--border);
-  border-radius:2px;
+  border-radius:12px;
   padding:10px 14px;
   margin-bottom:8px;
   position:relative;
@@ -632,19 +763,19 @@ body::after{
   left:0;top:50%;
   transform:translateY(-50%);
   width:3px;height:60%;
-  background:var(--amber);
-  border-radius:0 2px 2px 0;
-  opacity:0.6;
+  background:linear-gradient(180deg,var(--primary),var(--pink));
+  border-radius:0 6px 6px 0;
+  opacity:0.7;
 }
 
 .echo-rank{
-  font-family:var(--mono);
+  font-family:var(--sans);
   font-size:18px;
   font-weight:700;
-  color:var(--amber);
+  color:var(--primary);
   flex-shrink:0;
   min-width:28px;
-  text-shadow:0 0 12px var(--amber-glow);
+  text-shadow:0 0 12px var(--primary-glow);
 }
 
 .echo-text{
@@ -667,12 +798,12 @@ body::after{
 }
 
 .echo-count{
-  font-family:var(--mono);
+  font-family:var(--sans);
   font-size:9px;
-  color:var(--coral);
+  color:var(--pink);
   white-space:nowrap;
   letter-spacing:0.5px;
-  font-weight:600;
+  font-weight:700;
 }
 
 .echo-avatars{
@@ -688,7 +819,7 @@ body::after{
   flex-shrink:0;
 }
 
-/* ═══ VOCAB ═══ */
+/* ═══ VOCAB — 词汇丰富度 ═══ */
 .vocab-entry{
   display:flex;
   align-items:center;
@@ -710,24 +841,24 @@ body::after{
   flex:1;
   height:8px;
   background:var(--surface);
-  border-radius:2px;
+  border-radius:4px;
   overflow:hidden;
   position:relative;
 }
 
 .vocab-bar{
   height:100%;
-  border-radius:2px;
-  background:linear-gradient(90deg,var(--teal),var(--teal-soft));
+  border-radius:4px;
+  background:linear-gradient(90deg,var(--mint),var(--mint-soft));
 }
 
 .vocab-ratio{
-  font-family:var(--mono);
+  font-family:var(--sans);
   font-size:12px;
-  color:var(--teal);
+  color:var(--mint);
   min-width:40px;
   text-align:right;
-  font-weight:500;
+  font-weight:600;
 }
 
 .vocab-sig{
@@ -750,9 +881,9 @@ body::after{
   font-family:var(--cn);
   font-size:var(--wc-size,12px);
   color:var(--wc-color,var(--text-dim));
-  padding:4px 12px;
+  padding:5px 14px;
   border:1px solid var(--wc-border,var(--border));
-  border-radius:2px;
+  border-radius:20px;
   background:var(--wc-bg,transparent);
   white-space:nowrap;
 }
@@ -779,9 +910,8 @@ body::after{
 
 .content-bar{
   width:100%;
-  border-radius:2px 2px 0 0;
+  border-radius:6px 6px 0 0;
   min-height:2px;
-  transition:height 0.5s ease;
 }
 
 .content-bar-label{
@@ -792,10 +922,10 @@ body::after{
 }
 
 .content-bar-count{
-  font-family:var(--mono);
+  font-family:var(--sans);
   font-size:10px;
   color:var(--text-dim);
-  font-weight:500;
+  font-weight:600;
 }
 
 /* ═══ COMMENTARY ═══ */
@@ -812,9 +942,9 @@ body::after{
   display:inline-flex;
   align-items:center;
   gap:4px;
-  background:var(--amber-soft);
-  border:1px solid var(--border-amber);
-  border-radius:2px;
+  background:var(--primary-soft);
+  border:1px solid var(--border-primary);
+  border-radius:12px;
   padding:1px 8px 1px 3px;
   margin:0 2px;
   vertical-align:middle;
@@ -824,27 +954,38 @@ body::after{
 .inline-avatar{
   width:18px;height:18px;
   border-radius:50%;
-  border:1px solid var(--border-amber);
+  border:1px solid var(--border-primary);
   object-fit:cover;
   flex-shrink:0;
 }
 
 .inline-name{
   font-size:11px;
-  color:var(--amber);
+  color:var(--primary);
   font-weight:600;
 }
 
 /* ═══ FOOTER ═══ */
 .footer{
   text-align:center;
-  font-family:var(--mono);
+  font-family:var(--sans);
   font-size:9px;
   color:var(--text-muted);
   margin-top:36px;
   padding-top:20px;
   border-top:1px solid var(--border);
   letter-spacing:2px;
+  position:relative;
+}
+
+.footer::before{
+  content:'✦ · ✧ · ✦';
+  display:block;
+  font-size:8px;
+  color:var(--primary);
+  letter-spacing:6px;
+  margin-bottom:8px;
+  opacity:0.3;
 }
 
 /* ═══ EMPTY STATE ═══ */
@@ -856,15 +997,8 @@ body::after{
   letter-spacing:1px;
 }
 
-/* ═══ SECTION GRID ═══ */
-.grid-2{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
-}
-
 @media(max-width:700px){
-  .grid-2{grid-template-columns:1fr;}
+  .grid-2,.grid-wide-left{grid-template-columns:1fr;}
   .metric-row{flex-direction:column;}
 }
 </style>
@@ -875,7 +1009,7 @@ body::after{
   <!-- HEADER -->
   <div class="header">
     <div class="group-tag">{{group_name}}</div>
-    <h1>Chat Pulse<span class="cursor"></span></h1>
+    <h1>Chat Pulse<span class="cursor">✦</span></h1>
     <div class="subtitle">{{time_range}} · {{group_id}}</div>
   </div>
 
@@ -884,65 +1018,65 @@ body::after{
     {{hero_metrics_html}}
   </div>
 
-  <!-- VELOCITY LINE -->
-  <div class="section">
-    <div class="section-title"><span class="icon">◈</span> Message Velocity</div>
-    {{velocity_svg_html}}
-  </div>
-
-  <!-- LEADERBOARD -->
-  <div class="section">
-    <div class="section-title"><span class="icon">▲</span> Activity Leaderboard</div>
-    {{leaderboard_html}}
+  <!-- VELOCITY (wide) + LEADERBOARD (narrow) -->
+  <div class="grid-wide-left">
+    <div class="section-inner">
+      <div class="section-title"><span class="icon">✦</span> Message Velocity</div>
+      {{velocity_svg_html}}
+    </div>
+    <div class="section-inner">
+      <div class="section-title"><span class="icon">★</span> Leaderboard</div>
+      {{leaderboard_html}}
+    </div>
   </div>
 
   <!-- HOURLY HEATMAP + SENTIMENT -->
   <div class="section">
-    <div class="section-title"><span class="icon">▦</span> Temporal Heatmap</div>
+    <div class="section-title"><span class="icon">✧</span> Temporal Heatmap</div>
     {{heatmap_html}}
     {{sentiment_bar_html}}
   </div>
 
   <!-- CONTENT MIX + RING -->
   <div class="grid-2">
-    <div class="section">
-      <div class="section-title"><span class="icon">◆</span> Content Mix</div>
+    <div class="section-inner">
+      <div class="section-title"><span class="icon">❋</span> Content Mix</div>
       {{content_mix_html}}
     </div>
-    <div class="section">
-      <div class="section-title"><span class="icon">◉</span> Participation Ring</div>
+    <div class="section-inner">
+      <div class="section-title"><span class="icon">☽</span> Participation</div>
       {{ring_svg_html}}
     </div>
   </div>
 
-  <!-- SOCIAL GRAPH -->
-  <div class="section">
-    <div class="section-title"><span class="icon">◎</span> Social Graph</div>
-    {{social_graph_html}}
+  <!-- SOCIAL GRAPH + WORD CLOUD/VOCAB -->
+  <div class="grid-2">
+    <div class="section-inner">
+      <div class="section-title"><span class="icon">✿</span> Social Graph</div>
+      {{social_graph_html}}
+    </div>
+    <div class="section-inner">
+      <div class="section-title"><span class="icon">✎</span> Keywords</div>
+      {{word_cloud_html}}
+      {{vocab_html}}
+    </div>
   </div>
 
-  <!-- WORD CLOUD + VOCAB -->
-  <div class="section">
-    <div class="section-title"><span class="icon">文</span> Vocabulary &amp; Keywords</div>
-    {{word_cloud_html}}
-    {{vocab_html}}
-  </div>
-
-  <!-- EVENTS -->
-  <div class="section">
-    <div class="section-title"><span class="icon">◈</span> Event Chains</div>
-    {{events_html}}
-  </div>
-
-  <!-- ECHOES -->
-  <div class="section">
-    <div class="section-title"><span class="icon">◉</span> Echo Quotes</div>
-    {{echoes_html}}
+  <!-- EVENTS + ECHOES -->
+  <div class="grid-2">
+    <div class="section-inner">
+      <div class="section-title"><span class="icon">✦</span> Event Chains</div>
+      {{events_html}}
+    </div>
+    <div class="section-inner">
+      <div class="section-title"><span class="icon">♡</span> Echo Quotes</div>
+      {{echoes_html}}
+    </div>
   </div>
 
   <!-- COMMENTARY -->
   <div class="section">
-    <div class="section-title"><span class="icon">文</span> Narrative Digest</div>
+    <div class="section-title"><span class="icon">☽</span> Narrative Digest</div>
     <div class="commentary">{{commentary_html}}</div>
   </div>
 

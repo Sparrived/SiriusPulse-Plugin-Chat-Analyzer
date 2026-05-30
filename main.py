@@ -19,7 +19,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from sirius_pulse.plugins import PluginBase, PluginResponse, command
+from sirius_pulse.plugins import PluginBase, PluginResponse
+from sirius_pulse.plugins.decorators import command_group, group_command
 from sirius_pulse.plugins.config import get_config_manager
 
 from .analyzers import (
@@ -58,7 +59,7 @@ class ChatAnalyzerPlugin(PluginBase):
     _plugin_description = (
         "多维度群聊分析：消息排名、情感分析、社交图谱、对话节奏、"
         "词汇丰富度、内容分类、事件链、复读金句，"
-        "生成暗黑琥珀终端风格 HTML 图片报告。"
+        "生成星空梦幻可爱风格 HTML 图片报告。"
     )
     _plugin_version = "4.0.0"
     _plugin_author = "sirius-chat"
@@ -74,12 +75,38 @@ class ChatAnalyzerPlugin(PluginBase):
     _plugin_prompt_inject = (
         "群聊分析：群友们可以让我分析群聊数据，包括消息排名、情感分析、"
         "社交图谱、对话节奏、词汇丰富度、内容分类等，"
-        "我可以生成暗黑琥珀终端风格的可视化分析报告"
+        "我可以生成星空梦幻可爱风格的可视化分析报告"
     )
 
     # 定时自动分析：默认每晚 22:00，分析最近 1440 分钟
     _plugin_schedule = [
         {"time": "22:00", "duration": 1440},
+    ]
+
+    # WebUI 配置表单定义
+    _plugin_parameters = [
+        {
+            "name": "schedule",
+            "type": "object_array",
+            "description": "定时分析配置",
+            "group": "定时任务",
+            "fields": [
+                {"name": "time", "type": "str", "description": "触发时间（HH:MM）", "required": True},
+                {"name": "duration", "type": "int", "description": "分析时长（分钟）", "default": 1440},
+            ],
+        },
+        {
+            "name": "blocked_words",
+            "type": "list",
+            "description": "词云屏蔽词列表（每行一个）",
+            "group": "词云设置",
+            "default": [
+                "动画表情", "jpg", "图片", "png", "gif",
+                "jpeg", "bmp", "webp", "svg", "video",
+                "mp4", "mp3", "wav", "file", "文件",
+                "表情包", "表情", "动图", "静态图", "截图"
+            ],
+        },
     ]
 
     def on_load(self) -> None:
@@ -88,6 +115,7 @@ class ChatAnalyzerPlugin(PluginBase):
         self._schedule_task: asyncio.Task | None = None
         self._schedule_list: list[dict[str, Any]] = []
         self._config_listener: Any = None
+        self._blocked_words: set[str] = set()  # 词云屏蔽词配置
 
         try:
             self._config_listener = get_config_manager().add_listener(
@@ -96,7 +124,30 @@ class ChatAnalyzerPlugin(PluginBase):
         except Exception as exc:
             logger.warning("注册配置监听器失败: %s", exc)
 
+        # 加载屏蔽词配置
+        self._load_blocked_words_config()
+
         self._schedule_task = asyncio.create_task(self._run_schedule_loop())
+
+    def _load_blocked_words_config(self) -> None:
+        """从配置管理器加载屏蔽词配置。"""
+        try:
+            # 优先从 data_store 读取（WebUI 表单配置）
+            if hasattr(self, 'ctx') and hasattr(self.ctx, 'data_store'):
+                blocked_words = self.ctx.data_store.get("blocked_words", [])
+                if isinstance(blocked_words, list) and blocked_words:
+                    self._blocked_words = set(blocked_words)
+                    logger.info("已从 data_store 加载词云屏蔽词配置: %s", ", ".join(self._blocked_words))
+                    return
+
+            # 回退到配置文件
+            config = get_config_manager().get_settings(self._plugin_name)
+            blocked_words = config.get("blocked_words", [])
+            if isinstance(blocked_words, list) and blocked_words:
+                self._blocked_words = set(blocked_words)
+                logger.info("已从配置文件加载词云屏蔽词配置: %s", ", ".join(self._blocked_words))
+        except Exception as exc:
+            logger.debug("加载屏蔽词配置失败（使用默认值）: %s", exc)
 
     def on_unload(self) -> None:
         logger.info("群聊分析插件已卸载")
@@ -113,7 +164,7 @@ class ChatAnalyzerPlugin(PluginBase):
             self._schedule_cancel_event = None
 
     def _on_config_changed(self, plugin_name: str, config: dict[str, Any]) -> None:
-        """配置变更回调：热重载定时配置。"""
+        """配置变更回调：热重载定时配置和屏蔽词。"""
         if plugin_name != self._plugin_name:
             return
 
@@ -127,6 +178,12 @@ class ChatAnalyzerPlugin(PluginBase):
             self._schedule_list = new_schedule
             if hasattr(self, '_schedule_triggered'):
                 self._schedule_triggered.clear()
+
+        # 更新屏蔽词配置
+        blocked_words = settings.get("blocked_words", [])
+        if isinstance(blocked_words, list):
+            self._blocked_words = set(blocked_words)
+            logger.info("词云屏蔽词已更新: %s", ", ".join(self._blocked_words))
 
     def _get_schedule_list(self) -> list[dict[str, Any]]:
         """获取定时配置列表（优先从配置管理器读取，回退到默认值）。"""
@@ -237,14 +294,27 @@ class ChatAnalyzerPlugin(PluginBase):
 
         logger.info("定时分析完成，共处理 %d 个群", len(group_ids))
 
-    @command(
+    @command_group(
         "ca",
         prefix="/",
-        patterns=["ca analyse", "ca analyze", "ca", "群聊分析", "聊天分析"],
+        patterns=["ca"],
+        pattern_type="prefix",
+        description="群聊分析工具集",
+        examples=["/ca analyse", "/ca analyze 360", "/ca report daily"],
+        hidden_from_intent=True,
+    )
+    def ca_group(self):
+        """指令组入口，不需要实现。"""
+        pass
+
+    @group_command(
+        "analyse",
+        patterns=["analyse", "analyze", "群聊分析", "聊天分析"],
         pattern_type="prefix",
         render_mode="llm",
         description="分析群聊数据并生成报告",
-        examples=["/ca analyze", "/ca analyze 360"],
+        examples=["analyse", "analyze 360"],
+        hidden_from_intent=True,
         system_prompt_suffix="请用活泼的语气告知用户分析报告已生成，并简要提一下亮点。",
         max_tokens=200,
         timeout=120.0,
@@ -290,6 +360,67 @@ class ChatAnalyzerPlugin(PluginBase):
             text=(
                 f"📊 群聊分析报告已生成（{report['time_range']}），"
                 "来看看大家的精彩表现吧~"
+            ),
+            data=report,
+            mood_hint="活泼、惊喜",
+        )
+
+    # ── 嵌套指令组示例：/ca report ──
+
+    @command_group(
+        "report",
+        patterns=["report"],
+        pattern_type="prefix",
+        parent="ca",
+        description="报告生成工具",
+        examples=["/ca report daily", "/ca report weekly"],
+        hidden_from_intent=True,
+    )
+    def report_group(self):
+        """嵌套指令组入口，不需要实现。"""
+        pass
+
+    @group_command(
+        "daily",
+        patterns=["daily", "每日"],
+        pattern_type="prefix",
+        parent="ca.report",
+        render_mode="llm",
+        description="生成每日群聊报告",
+        examples=["daily"],
+        hidden_from_intent=True,
+        system_prompt_suffix="请用简洁的语气告知用户每日报告已生成。",
+        max_tokens=150,
+        timeout=60.0,
+    )
+    async def cmd_daily_report(self) -> PluginResponse:
+        """生成每日群聊报告。
+
+        等同于 /ca analyse 1440（分析最近24小时）。
+        """
+        group_id = self.ctx.message.group_id
+        if not group_id:
+            return PluginResponse.fail("只能在群聊中使用此指令")
+
+        messages = await self._fetch_history(group_id, 1440)
+        if not messages:
+            return PluginResponse.fail("未能获取到聊天记录")
+
+        end_time = datetime.now(_CHINA_TZ)
+        start_time = end_time - timedelta(minutes=1440)
+        report = await self._analyze(messages, group_id, start_time, end_time)
+
+        adapter = self.ctx.adapter
+        try:
+            await self._render_and_send(report, adapter, group_id)
+        except RuntimeError:
+            text_report = self._text_report(report)
+            return PluginResponse.ok(text=text_report, data=report, mood_hint="活泼、惊喜")
+
+        return PluginResponse.ok(
+            text=(
+                f"📊 每日群聊报告已生成（{report['time_range']}），"
+                "来看看今天的精彩表现吧~"
             ),
             data=report,
             mood_hint="活泼、惊喜",
@@ -460,6 +591,33 @@ class ChatAnalyzerPlugin(PluginBase):
                 mapping[uid] = name
         return mapping
 
+    @staticmethod
+    def _find_bot_qq(
+        messages: list[dict[str, Any]], uid_to_name: dict[str, str],
+    ) -> str:
+        """从消息数据中查找机器人的 QQ 号。
+
+        策略：找到消息中 assistant 角色的 user_id，
+        或者找到所有 user_id 中未出现在 uid_to_name 里的数字 ID。
+        """
+        # 优先：assistant 角色的消息
+        for msg in messages:
+            if msg.get("role") == "assistant":
+                uid = str(msg.get("user_id", ""))
+                if uid and uid.isdigit() and 5 <= len(uid) <= 11:
+                    return uid
+        # 回退：找消息中出现但不在 uid_to_name 中的数字 ID
+        for msg in messages:
+            uid = str(msg.get("user_id", ""))
+            if (
+                uid
+                and uid.isdigit()
+                and 5 <= len(uid) <= 11
+                and uid not in uid_to_name
+            ):
+                return uid
+        return ""
+
     async def _resolve_nickname(
         self, group_id: str, user_id: str, adapter: Any,
     ) -> str:
@@ -487,7 +645,9 @@ class ChatAnalyzerPlugin(PluginBase):
         sentiment = SentimentTracker()
         social_graph = SocialGraph()
         dynamics = ConversationDynamics()
-        vocab = VocabRichness()
+        # 从配置读取屏蔽词，如果未配置则使用默认值
+        blocked_words = self._blocked_words if self._blocked_words else None
+        vocab = VocabRichness(blocked_words=blocked_words)
         content_cls = ContentClassifier()
         digest = DailyDigest()
         event_tracker = EventChainTracker()
@@ -523,6 +683,13 @@ class ChatAnalyzerPlugin(PluginBase):
 
         adapter = self.ctx.adapter
         self_uid = str(getattr(adapter, "self_id", "") or "")
+
+        # 如果 self_uid 不是有效 QQ 号，尝试从消息数据中查找机器人的 QQ 号
+        if self_uid and not (self_uid.isdigit() and 5 <= len(self_uid) <= 11):
+            bot_qq = self._find_bot_qq(messages, uid_to_name)
+            if bot_qq:
+                uid_to_name[self_uid] = uid_to_name.get(bot_qq, bot_qq)
+
         if self_uid:
             all_uids.discard(self_uid)
 
@@ -1050,7 +1217,14 @@ class ChatAnalyzerPlugin(PluginBase):
             result = await self.ctx.engine.generate_text(prompt)
             if result:
                 commentary = result.strip()
-                commentary = self._sanitize_commentary(commentary, participant_map)
+                # 获取机器人的 uid 和名称，用于转换 <assistant> 标签
+                adapter = self.ctx.adapter
+                bot_uid = str(getattr(adapter, "self_id", "") or "")
+                bot_name = uid_to_name.get(bot_uid, "")
+                commentary = self._sanitize_commentary(
+                    commentary, participant_map,
+                    bot_uid=bot_uid, bot_name=bot_name,
+                )
                 return commentary
         except Exception as exc:
             logger.warning("LLM 总结生成失败: %s", exc)
@@ -1058,8 +1232,29 @@ class ChatAnalyzerPlugin(PluginBase):
         return ""
 
     @staticmethod
-    def _sanitize_commentary(text: str, participant_map: dict[str, str]) -> str:
+    def _sanitize_commentary(
+        text: str,
+        participant_map: dict[str, str],
+        bot_uid: str = "",
+        bot_name: str = "",
+    ) -> str:
         """清洗 LLM 输出中的非法 XML 标签，只保留合法的 <user> 标签。"""
+        # 预处理：将 <assistant> 标签转换为合法的 <user> 标签
+        if bot_uid:
+            safe_name = bot_name or f"qq_{bot_uid}"
+            text = re.sub(
+                r'<assistant>',
+                f'<user uid="{bot_uid}" name="{safe_name}">',
+                text,
+                flags=re.IGNORECASE,
+            )
+            text = re.sub(
+                r'</assistant>',
+                '</user>',
+                text,
+                flags=re.IGNORECASE,
+            )
+
         _USER_TAG_RE = re.compile(
             r'<user\s+uid="(\d+)"\s+name="([^"]*)"\s*>(.*?)</user>',
             re.DOTALL,
