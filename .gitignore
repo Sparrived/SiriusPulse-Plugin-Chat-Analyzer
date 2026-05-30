@@ -14,3 +14,5 @@ venv/
 .venv/
 env/
 .env
+test_output.html
+test_output.png

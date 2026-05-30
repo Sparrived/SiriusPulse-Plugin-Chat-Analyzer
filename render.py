@@ -74,13 +74,13 @@ def build_hero_metrics_html(
     """生成顶部 5 个核心指标卡。"""
     # 情感分数转为人类可读标签
     if sentiment_avg > 0.3:
-        sent_label = "positive"
+        sent_label = "积极"
         sent_cls = "teal"
     elif sentiment_avg < -0.1:
-        sent_label = "negative"
+        sent_label = "消极"
         sent_cls = "coral"
     else:
-        sent_label = "neutral"
+        sent_label = "中性"
         sent_cls = ""
 
     # 响应时间格式化
@@ -92,24 +92,23 @@ def build_hero_metrics_html(
     return f"""
     <div class="metric-box">
       <div class="metric-value">{message_count}</div>
-      <div class="metric-label">Total Messages</div>
+      <div class="metric-label">消息总数</div>
     </div>
     <div class="metric-box">
       <div class="metric-value">{unique_users}</div>
-      <div class="metric-label">Participants</div>
+      <div class="metric-label">参与人数</div>
     </div>
     <div class="metric-box">
       <div class="metric-value">{peak_velocity}</div>
-      <div class="metric-label">Peak / 5min</div>
+      <div class="metric-label">峰值/5分钟</div>
     </div>
     <div class="metric-box">
       <div class="metric-value">{resp_str}</div>
-      <div class="metric-label">Avg Response</div>
+      <div class="metric-label">平均响应</div>
     </div>
     <div class="metric-box">
-      <div class="metric-value {sent_cls}">{sentiment_avg:+.2f}</div>
-      <div class="metric-label">Sentiment</div>
-      <div class="metric-sub">{sent_label}</div>
+      <div class="metric-value {sent_cls}">{sent_label}</div>
+      <div class="metric-label">情感倾向</div>
     </div>"""
 
 
@@ -257,14 +256,14 @@ def build_leaderboard_html(
 
 
 def _heatmap_color(count: int, max_count: int) -> str:
-    """根据消息数量返回热力图颜色（星空紫渐变）。"""
+    """根据消息数量返回热力图颜色（青→金双色渐变）。"""
     if max_count <= 0 or count <= 0:
-        return "#12123a"
+        return "#141420"
     ratio = count / max_count
-    # 从暗紫到亮紫罗兰的渐变
-    r = int(18 + ratio * 162)
-    g = int(24 + ratio * 118)
-    b = int(58 + ratio * 197)
+    # 青色 (45,214,191) → 金色 (255,200,87)
+    r = int(45 + ratio * 210)
+    g = int(214 - ratio * 14)
+    b = int(191 - ratio * 104)
     return f"rgb({r},{g},{b})"
 
 
@@ -319,9 +318,9 @@ def build_sentiment_bar_html(
     return f"""
     <div style="margin-top:16px;font-size:10px;color:#9090b8;letter-spacing:1px;
                 margin-bottom:6px;display:flex;justify-content:space-between;">
-      <span style="color:#7dffc2">POSITIVE {pos_pct:.0f}%</span>
-      <span>NEUTRAL {neutral_pct:.0f}%</span>
-      <span style="color:#ff8ec4">NEGATIVE {neg_pct:.0f}%</span>
+      <span style="color:#7dffc2">积极 {pos_pct:.0f}%</span>
+      <span>中性 {neutral_pct:.0f}%</span>
+      <span style="color:#ff8ec4">消极 {neg_pct:.0f}%</span>
     </div>
     <div class="sentiment-bar">
       <div class="sentiment-pos" style="width:{pos_pct:.1f}%"></div>
@@ -344,10 +343,10 @@ def build_content_mix_html(content_dist: dict[str, int]) -> str:
     total = content_dist.get("total", 1) or 1
 
     categories = [
-        ("Text", text_c, "#b48eff"),
-        ("Image", image_c, "#7dffc2"),
-        ("Link", link_c, "#9090b8"),
-        ("Short", short_c, "#ff8ec4"),
+        ("文本", text_c, "#b48eff"),
+        ("图片", image_c, "#7dffc2"),
+        ("链接", link_c, "#9090b8"),
+        ("短句", short_c, "#ff8ec4"),
     ]
     max_val = max(v for _, v, _ in categories) or 1
 
@@ -431,7 +430,7 @@ def build_ring_svg_html(
         </text>
         <text x="{cx}" y="{cy + 12}" text-anchor="middle" fill="#50507a"
               font-size="8" font-family="Quicksand,sans-serif" letter-spacing="1">
-          MESSAGES
+          消息
         </text>
       </svg>
       <div class="ring-legend">{"".join(legend_items)}</div>
@@ -447,36 +446,143 @@ def build_social_graph_html(
     social_pairs: list[dict[str, Any]],
     uid_to_name: dict[str, str],
 ) -> str:
-    """生成社交互动排行。"""
+    """生成社交互动图谱 SVG（节点 = 头像，曲线 = 互动关系）。"""
     if not social_pairs:
         return '<div class="empty-state">暂无社交互动数据</div>'
 
     max_count = social_pairs[0]["count"] if social_pairs else 1
 
-    rows: list[str] = []
-    for pair in social_pairs[:6]:
+    # 收集所有参与用户，保持出现顺序
+    seen: dict[str, str] = {}  # uid -> name
+    for pair in social_pairs:
+        for uid_key in ("user_a", "user_b"):
+            uid = pair[uid_key]
+            if uid not in seen:
+                seen[uid] = uid_to_name.get(uid, f"qq_{uid}")
+    uids = list(seen.keys())
+    n = len(uids)
+    uid_idx = {uid: i for i, uid in enumerate(uids)}
+
+    # 收集每个用户的总互动次数，用于头像大小
+    user_activity: dict[str, int] = {uid: 0 for uid in seen}
+    for pair in social_pairs:
+        user_activity[pair["user_a"]] += pair["count"]
+        user_activity[pair["user_b"]] += pair["count"]
+    max_activity = max(user_activity.values()) if user_activity else 1
+
+    # 扁平布局参数
+    svg_w, svg_h = 700, 320
+    cx, cy = svg_w / 2, svg_h / 2
+
+    # 均匀椭圆布局 + 微扰动
+    import math
+
+    rx = cx - 70
+    ry = cy - 60
+
+    positions: list[tuple[float, float]] = []
+    for i in range(n):
+        angle = 2 * math.pi * i / n - math.pi / 2  # 均匀分布，顶部开始
+        x = cx + rx * math.cos(angle)
+        y = cy + ry * math.sin(angle)
+        positions.append((x, y))
+
+    # 颜色池
+    edge_colors = ["#b48eff", "#ff8ec4", "#7dffc2", "#ffc857", "#9090b8",
+                   "#ff9e7a", "#7ac8ff", "#c8a2ff"]
+
+    defs_parts: list[str] = []
+    edge_parts: list[str] = []
+    node_parts: list[str] = []
+
+    # 画连线（贝塞尔曲线）
+    for idx, pair in enumerate(social_pairs[:8]):
         a_uid = pair["user_a"]
         b_uid = pair["user_b"]
         count = pair["count"]
-        a_name = uid_to_name.get(a_uid, f"qq_{a_uid}")
-        b_name = uid_to_name.get(b_uid, f"qq_{b_uid}")
-        bar_w = (count / max_count * 100) if max_count > 0 else 0
+        if a_uid not in uid_idx or b_uid not in uid_idx:
+            continue
+        ax, ay = positions[uid_idx[a_uid]]
+        bx, by = positions[uid_idx[b_uid]]
+        ratio = count / max_count
+        # 粗细差别放大：最细 1px，最粗 8px
+        stroke_w = 1 + ratio * 7
+        opacity = 0.25 + ratio * 0.6
+        color = edge_colors[idx % len(edge_colors)]
 
-        rows.append(f"""
-    <div class="social-pair">
-      <div class="social-avatars">
-        <img class="social-avatar" src="{_avatar_url(a_uid, uid_to_name)}"
-             alt="{_html_module.escape(a_name, quote=False)}">
-        <img class="social-avatar" src="{_avatar_url(b_uid, uid_to_name)}"
-             alt="{_html_module.escape(b_name, quote=False)}">
-      </div>
-      <div class="social-bar-wrap">
-        <div class="social-bar" style="width:{bar_w:.0f}%"></div>
-      </div>
-      <div class="social-count">{count}</div>
-    </div>""")
+        # 贝塞尔控制点：向圆心偏移，形成弧线
+        mid_x = (ax + bx) / 2
+        mid_y = (ay + by) / 2
+        dx = mid_x - cx
+        dy = mid_y - cy
+        dist = math.sqrt(dx * dx + dy * dy) or 1
+        cp_x = mid_x - dx / dist * 35
+        cp_y = mid_y - dy / dist * 35
 
-    return "".join(rows)
+        edge_parts.append(
+            f'<path d="M{ax:.0f},{ay:.0f} Q{cp_x:.0f},{cp_y:.0f} {bx:.0f},{by:.0f}" '
+            f'fill="none" stroke="{color}" stroke-width="{stroke_w:.1f}" '
+            f'opacity="{opacity:.2f}" stroke-linecap="round"/>'
+        )
+
+        # 连线中点显示互动次数
+        label_x = (ax + 2 * cp_x + bx) / 4
+        label_y = (ay + 2 * cp_y + by) / 4
+        edge_parts.append(
+            f'<text x="{label_x:.0f}" y="{label_y:.0f}" text-anchor="middle" '
+            f'dominant-baseline="middle" fill="{color}" font-size="14" '
+            f'font-family="Quicksand,sans-serif" font-weight="700" '
+            f'opacity="0.9">{count}</text>'
+        )
+
+    # 画节点（头像大小随互动次数缩放）
+    avatar_r_min = 16
+    avatar_r_max = 28
+    for i, uid in enumerate(uids):
+        x, y = positions[i]
+        name = seen[uid]
+        avatar = _avatar_url(uid, uid_to_name)
+        safe_name = _html_module.escape(name, quote=False)
+        activity = user_activity.get(uid, 0)
+        ratio = activity / max_activity if max_activity else 0
+        avatar_r = avatar_r_min + ratio * (avatar_r_max - avatar_r_min)
+
+        # 头像裁剪圆
+        clip_id = f"socialClip{i}"
+        defs_parts.append(
+            f'<clipPath id="{clip_id}">'
+            f'<circle cx="{x:.0f}" cy="{y:.0f}" r="{avatar_r:.0f}"/>'
+            f'</clipPath>'
+        )
+        node_parts.append(
+            f'<circle cx="{x:.0f}" cy="{y:.0f}" r="{avatar_r + 2:.0f}" '
+            f'fill="rgba(157,124,255,0.12)" stroke="rgba(157,124,255,0.25)" '
+            f'stroke-width="1.5"/>'
+        )
+        node_parts.append(
+            f'<image href="{avatar}" '
+            f'x="{x - avatar_r:.0f}" y="{y - avatar_r:.0f}" '
+            f'width="{avatar_r * 2:.0f}" height="{avatar_r * 2:.0f}" '
+            f'clip-path="url(#{clip_id})"/>'
+        )
+        # 名字（节点下方）
+        name_y = y + avatar_r + 14
+        node_parts.append(
+            f'<text x="{x:.0f}" y="{name_y:.0f}" text-anchor="middle" '
+            f'fill="#c0b8e0" font-size="12" font-weight="600"'
+            f' font-family="LXGW WenKai,Noto Sans SC,sans-serif">'
+            f'{safe_name}</text>'
+        )
+
+    svg = (
+        f'<svg width="100%" viewBox="0 0 {svg_w} {svg_h}" '
+        f'preserveAspectRatio="xMidYMid meet">\n'
+        f'<defs>{"".join(defs_parts)}</defs>\n'
+        f'{"".join(edge_parts)}\n'
+        f'{"".join(node_parts)}\n'
+        f'</svg>'
+    )
+    return svg
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -494,7 +600,7 @@ def build_word_cloud_html(word_cloud: list[tuple[str, int]]) -> str:
     tags: list[str] = []
     for word, count in word_cloud:
         ratio = count / max_count
-        size = int(11 + ratio * 10)
+        size = 13
         # 根据频率渐变颜色（星空紫主题）
         if ratio >= 0.7:
             color = "#b48eff"
@@ -528,40 +634,56 @@ def build_vocab_html(
     vocab_rich: list[dict[str, Any]],
     uid_to_name: dict[str, str],
 ) -> str:
-    """生成词汇丰富度排行。"""
+    """生成表达风格卡片。"""
     if not vocab_rich:
         return '<div class="empty-state">暂无词汇数据</div>'
 
-    max_richness = vocab_rich[0]["richness"] if vocab_rich else 1.0
+    # 丰富度等级标签
+    def _richness_label(r: float) -> str:
+        if r >= 0.8:
+            return "词汇丰富"
+        if r >= 0.6:
+            return "表达均衡"
+        if r >= 0.4:
+            return "用语简洁"
+        return "言简意赅"
 
     rows: list[str] = []
-    for entry in vocab_rich:
+    for entry in vocab_rich[:4]:
         uid = entry["uid"]
         name = uid_to_name.get(uid, f"qq_{uid}")
         richness = entry["richness"]
-        bar_w = (richness / max_richness * 100) if max_richness > 0 else 0
         signature = entry.get("signature", [])
+        label = _richness_label(richness)
+        avatar = _avatar_url(uid, uid_to_name)
+
         sig_html = ""
         if signature:
             sig_text = " · ".join(signature)
             sig_html = (
-                f'<div class="vocab-sig">'
-                f'📌 {_html_module.escape(sig_text, quote=False)}</div>'
+                f'<div style="font-size:10px;color:var(--text-dim);'
+                f'text-align:center;margin-top:4px">'
+                f'{_html_module.escape(sig_text, quote=False)}</div>'
             )
 
-        rows.append(f"""
-    <div>
-      <div class="vocab-entry">
-        <div class="vocab-name">{_html_module.escape(name, quote=False)}</div>
-        <div class="vocab-bar-wrap">
-          <div class="vocab-bar" style="width:{bar_w:.0f}%"></div>
-        </div>
-        <div class="vocab-ratio">{richness:.2f}</div>
-      </div>
-      {sig_html}
-    </div>""")
+        rows.append(
+            f'<div style="display:flex;flex-direction:column;align-items:center;'
+            f'padding:10px 6px;border:1px solid var(--border);border-radius:12px;'
+            f'background:var(--surface-2)">'
+            f'<img src="{avatar}" style="width:32px;height:32px;border-radius:50%;'
+            f'border:1.5px solid var(--border);object-fit:cover;margin-bottom:6px">'
+            f'<span style="font-size:12px;color:var(--text);font-weight:500">'
+            f'{_html_module.escape(name, quote=False)}</span>'
+            f'<span class="event-tag" style="background:var(--mint-soft);color:var(--mint);'
+            f'border-color:rgba(110,232,176,0.2);margin-top:4px">{label}</span>'
+            f'{sig_html}</div>'
+        )
 
-    return "".join(rows)
+    return (
+        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">'
+        + "".join(rows)
+        + "</div>"
+    )
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -625,16 +747,16 @@ def build_events_html(
 
         cards.append(f"""
         <div class="event-card">
-          <div class="event-header">
-            <span class="event-rank">{rank_label}</span>
-            <span class="event-title">{_html_module.escape(llm_title, quote=False)}</span>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+            <span style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+              <span class="event-rank">{rank_label}</span>
+              <span class="event-title">{_html_module.escape(llm_title, quote=False)}</span>
+            </span>
+            <span style="flex:1;text-align:center;font-size:10px;color:var(--text-muted);letter-spacing:0.5px;min-width:0">
+              ⏰ {event["time_range"]} &nbsp; 💬 {event["message_count"]}条 &nbsp; 👥 {event["participant_count"]}人
+            </span>
+            <span style="display:flex;gap:4px;flex-shrink:0">{tags_html}</span>
           </div>
-          <div class="event-meta">
-            <span>⏰ {event["time_range"]}</span>
-            <span>💬 {event["message_count"]}条</span>
-            <span>👥 {event["participant_count"]}人</span>
-          </div>
-          {f'<div class="event-tags">{tags_html}</div>' if tags_html else ''}
           {f'<div class="event-flow">{flow_html}</div>' if llm_flow else flow_html}
         </div>""")
 
@@ -745,6 +867,231 @@ def build_commentary_html(commentary: str) -> str:
 
 
 # ═══════════════════════════════════════════════════════════════════
+# SECTION GRID 排布算法 — 贪心分箱使各列高度最平整
+# ═══════════════════════════════════════════════════════════════════
+
+# section-block padding(44) + title 栏(~48) = 每个卡片固定开销
+_SEC_OVERHEAD = 92
+_LB_ROW = 56        # lb-entry: padding 20 + avatar 36
+_HEATMAP = 180       # grid + labels + sentiment bar
+_RING = 170          # ring SVG 140 + legend 间距
+_CONTENT_MIX = 130   # bars 80 + labels
+_SOCIAL_ROW = 48     # social-pair: padding 16 + avatar 28
+_WORD_CLOUD = 90     # 词云区域
+_VOCAB_ROW = 52      # vocab-entry: padding 20 + bar 8 + 间距
+_ECHO_ROW = 60       # echo-card: padding 20 + 内容
+_EVENT_CARD = 170    # event-card: header + meta + tags + flow
+_COMMENTARY_LINE = 31  # line-height: 2.2 * 14px
+
+
+def _strip_html_tags(text: str) -> str:
+    """去掉 HTML/XML 标签，返回纯文本（用于估算显示字数）。"""
+    return _re_module.sub(r"<[^>]+>", "", text)
+
+
+def _estimate_height(
+    name: str,
+    *,
+    leaderboard_len: int = 0,
+    social_len: int = 0,
+    vocab_len: int = 0,
+    events_len: int = 0,
+    echoes_len: int = 0,
+    commentary_len: int = 0,
+) -> int:
+    """根据内容量预估模块像素高度。"""
+    if name == "leaderboard":
+        return _SEC_OVERHEAD + leaderboard_len * _LB_ROW
+    if name == "heatmap":
+        return _SEC_OVERHEAD + _HEATMAP
+    if name == "ring":
+        return _SEC_OVERHEAD + _RING
+    if name == "content_mix":
+        return _SEC_OVERHEAD + _CONTENT_MIX
+    if name == "social":
+        return _SEC_OVERHEAD + social_len * _SOCIAL_ROW
+    if name == "keywords":
+        return _SEC_OVERHEAD + _WORD_CLOUD + vocab_len * _VOCAB_ROW
+    if name == "events":
+        return _SEC_OVERHEAD + events_len * _EVENT_CARD
+    if name == "echoes":
+        return _SEC_OVERHEAD + echoes_len * _ECHO_ROW
+    if name == "commentary":
+        lines = max(1, commentary_len // 18)
+        return _SEC_OVERHEAD + lines * _COMMENTARY_LINE
+    return 200
+
+
+def _arrange_grid(
+    full_width: list[tuple[int, str]],
+    columns: list[list[tuple[int, str]]],
+    col_count: int,
+    gap_px: int = 12,
+) -> str:
+    """将全宽模块和已分箱的普通模块组装成 Grid HTML。
+
+    每列用 .grid-col 包裹为独立 flex 列，实现瀑布流效果。
+    较短的列底部自动插入装饰占位框补齐高度差。
+    full_width: [(插入位置优先级, html), ...]
+    columns:    col_count 个列表，每列表内 (height, html)
+    """
+    full_width.sort(key=lambda x: x[0])
+
+    # 计算每列总高度（含 gap）
+    col_heights: list[int] = []
+    for col in columns:
+        h = sum(item[0] for item in col)
+        h += gap_px * max(len(col) - 1, 0)
+        col_heights.append(h)
+    max_h = max(col_heights) if col_heights else 0
+
+    parts: list[str] = []
+    parts.append('<div class="sections-grid">')
+
+    for prio, html in full_width:
+        if prio < 1:
+            parts.append(html)
+
+    for i, col in enumerate(columns):
+        pad = max_h - col_heights[i] - 2 * gap_px
+        has_spacer = pad > 10
+        justify = "flex-start" if has_spacer else "space-between"
+        parts.append(f'<div class="grid-col" style="justify-content:{justify}">')
+        mid = len(col) // 2
+        for j, (_height, html) in enumerate(col):
+            parts.append(html)
+            if j == mid and has_spacer:
+                parts.append('<div class="grid-spacer"></div>')
+        parts.append("</div>")
+
+    for prio, html in full_width:
+        if prio >= 1:
+            parts.append(html)
+
+    parts.append("</div>")
+    return "\n".join(parts)
+
+
+def build_sections_grid_html(
+    *,
+    velocity_html: str,
+    leaderboard_html: str,
+    leaderboard_len: int,
+    heatmap_html: str,
+    sentiment_html: str,
+    ring_html: str,
+    content_html: str,
+    social_html: str,
+    social_len: int,
+    word_cloud_html: str,
+    vocab_html: str,
+    vocab_len: int,
+    events_html: str,
+    events_len: int,
+    echoes_html: str,
+    echoes_len: int,
+    commentary_html: str,
+    commentary_len: int,
+    col_count: int = 2,
+    measured_heights: dict[str, int] | None = None,
+) -> str:
+    """生成多栏 Grid 布局 HTML，最优分箱使各列高度最平整。
+
+    measured_heights: Playwright 测得的真实高度 {section_name: px}，
+    若提供则优先使用，否则回退到 _estimate_height 预估。
+    """
+
+    def _h(name: str, **kwargs: Any) -> int:
+        if measured_heights and name in measured_heights:
+            return measured_heights[name]
+        return _estimate_height(name, **kwargs)
+
+    # ── 全宽模块（固定位置） ──
+    full_width = [
+        (0, '<div class="section-block col-span-all" data-section="velocity">'
+            f'<div class="section-title"><span class="icon">✦</span> 消息速率</div>'
+            f'{velocity_html}</div>'),
+        (1, '<div class="section-block col-span-all" data-section="events">'
+            f'<div class="section-title"><span class="icon">✦</span> 事件链</div>'
+            f'{events_html}</div>'),
+        (2, '<div class="section-block col-span-all" data-section="commentary">'
+            f'<div class="section-title"><span class="icon">☽</span> 叙事摘要</div>'
+            f'<div class="commentary">{commentary_html}</div></div>'),
+    ]
+
+    # ── 可排列模块：(名称, 高度, HTML) ──
+    modules = [
+        ("leaderboard", _h("leaderboard", leaderboard_len=leaderboard_len),
+         '<div class="section-block" data-section="leaderboard">'
+         f'<div class="section-title"><span class="icon">★</span> 排行榜</div>'
+         f'{leaderboard_html}</div>'),
+        ("heatmap", _h("heatmap"),
+         '<div class="section-block" data-section="heatmap">'
+         '<div class="section-title" style="justify-content:space-between">'
+         '<span style="display:flex;align-items:center;gap:10px">'
+         '<span class="icon">✧</span> 时间热力图</span>'
+         '<span style="display:flex;align-items:center;gap:6px;font-size:9px;'
+         'font-weight:400;letter-spacing:1px;color:var(--text-muted)">'
+         '<span>少</span>'
+         '<span style="display:inline-block;width:60px;height:8px;border-radius:4px;'
+         'background:linear-gradient(90deg,rgb(45,214,191),rgb(255,200,87))"></span>'
+         '<span>多</span></span></div>'
+         f'{heatmap_html}{sentiment_html}</div>'),
+        ("ring", _h("ring"),
+         '<div class="section-block" data-section="ring">'
+         f'<div class="section-title"><span class="icon">☽</span> 参与度</div>'
+         f'{ring_html}</div>'),
+        ("content_mix", _h("content_mix"),
+         '<div class="section-block" data-section="content_mix">'
+         f'<div class="section-title"><span class="icon">❋</span> 内容构成</div>'
+         f'{content_html}</div>'),
+        ("social", _h("social", social_len=social_len),
+         '<div class="section-block" data-section="social">'
+         f'<div class="section-title"><span class="icon">✿</span> 社交图谱</div>'
+         f'{social_html}</div>'),
+        ("keywords", _h("keywords", vocab_len=vocab_len),
+         '<div class="section-block" data-section="keywords">'
+         f'<div class="section-title"><span class="icon">✎</span> 关键词</div>'
+         f'{word_cloud_html}{vocab_html}</div>'),
+        ("echoes", _h("echoes", echoes_len=echoes_len),
+         '<div class="section-block" data-section="echoes">'
+         f'<div class="section-title"><span class="icon">♡</span> 复读金句</div>'
+         f'{echoes_html}</div>'),
+    ]
+
+    # ── 精确最优分箱：暴力搜索使最高列与最低列的差值最小 ──
+    _gap = 12
+    n = len(modules)
+    best_max_diff = float("inf")
+    best_assignment: list[int] = []
+
+    # 枚举每个模块分配到哪一列 (col_count^n 种)
+    from itertools import product
+
+    for assignment in product(range(col_count), repeat=n):
+        col_h = [0] * col_count
+        col_cnt = [0] * col_count
+        for i, col_idx in enumerate(assignment):
+            if col_cnt[col_idx] > 0:
+                col_h[col_idx] += _gap
+            col_h[col_idx] += modules[i][1]
+            col_cnt[col_idx] += 1
+        # 跳过空列
+        if min(col_cnt) == 0:
+            continue
+        diff = max(col_h) - min(col_h)
+        if diff < best_max_diff:
+            best_max_diff = diff
+            best_assignment = list(assignment)
+
+    buckets: list[list[tuple[int, str]]] = [[] for _ in range(col_count)]
+    for i, col_idx in enumerate(best_assignment):
+        buckets[col_idx].append((modules[i][1], modules[i][2]))
+
+    return _arrange_grid(full_width, buckets, col_count, _gap)
+
+
+# ═══════════════════════════════════════════════════════════════════
 # 主渲染入口
 # ═══════════════════════════════════════════════════════════════════
 
@@ -774,6 +1121,7 @@ def render_report_html(
     content_dist: dict[str, int] | None = None,
     total_messages: int = 0,
     unique_users: int = 0,
+    measured_heights: dict[str, int] | None = None,
 ) -> str:
     """加载模板并替换所有占位符，返回完整 HTML 字符串。"""
     template = _load_template()
@@ -802,6 +1150,34 @@ def render_report_html(
     echoes_html = build_echoes_html(top_echoes or [], uid_to_name=name_map)
     commentary_html = build_commentary_html(commentary)
 
+    # 获取各模块内容条数，用于高度预估
+    _first_rank = next(iter(rankings), None)
+    leaderboard_len = len(rankings[_first_rank]) if _first_rank else 0
+
+    # 三栏贪心排布
+    sections_grid_html = build_sections_grid_html(
+        velocity_html=velocity_html,
+        leaderboard_html=leaderboard_html,
+        leaderboard_len=leaderboard_len,
+        heatmap_html=heatmap_html,
+        sentiment_html=sentiment_html,
+        ring_html=ring_html,
+        content_html=content_html,
+        social_html=social_html,
+        social_len=len(social_pairs or []),
+        word_cloud_html=word_cloud_html,
+        vocab_html=vocab_html,
+        vocab_len=len(vocab_rich or []),
+        events_html=events_html,
+        events_len=len(top_events or []),
+        echoes_html=echoes_html,
+        echoes_len=len(top_echoes or []),
+        commentary_html=commentary_html,
+        commentary_len=len(_strip_html_tags(commentary)),
+        col_count=2,
+        measured_heights=measured_heights,
+    )
+
     time_range = (
         f"{start_time.strftime('%m/%d %H:%M')} — {end_time.strftime('%m/%d %H:%M')}"
     )
@@ -813,18 +1189,7 @@ def render_report_html(
         group_id=group_id,
         time_range=time_range,
         hero_metrics_html=hero_html,
-        velocity_svg_html=velocity_html,
-        leaderboard_html=leaderboard_html,
-        heatmap_html=heatmap_html,
-        sentiment_bar_html=sentiment_html,
-        content_mix_html=content_html,
-        ring_svg_html=ring_html,
-        social_graph_html=social_html,
-        word_cloud_html=word_cloud_html,
-        vocab_html=vocab_html,
-        events_html=events_html,
-        echoes_html=echoes_html,
-        commentary_html=commentary_html,
+        sections_grid_html=sections_grid_html,
         plugin_version=plugin_version,
         generated_at=generated_at,
     )
@@ -842,8 +1207,8 @@ async def html_to_png(html: str) -> bytes:
 
     REPORT_WIDTH = 1100
     INITIAL_HEIGHT = 3000
-    BODY_PADDING = 24
-    EXTRA_PADDING = 30
+    BODY_PADDING = 0
+    EXTRA_PADDING = 0
 
     async with async_playwright() as p:
         browser = await p.chromium.launch()
@@ -904,3 +1269,57 @@ async def html_to_png(html: str) -> bytes:
             raise RuntimeError(f"HTML 渲染失败: {exc}") from exc
         finally:
             await browser.close()
+
+
+async def measure_section_heights(html: str) -> dict[str, int]:
+    """用 Playwright 测量每个 [data-section] 元素的真实渲染高度。"""
+    try:
+        from playwright.async_api import async_playwright
+    except ImportError:
+        return {}
+
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        try:
+            page = await browser.new_page(viewport={"width": 1100, "height": 3000})
+            await page.set_content(html, wait_until="load")
+            await asyncio.sleep(1.0)
+            heights: dict[str, int] = await page.evaluate("""() => {
+                const result = {};
+                document.querySelectorAll('[data-section]').forEach(el => {
+                    result[el.dataset.section] = el.offsetHeight;
+                });
+                return result;
+            }""")
+            return heights
+        except Exception as exc:
+            logger.warning("测量模块高度失败: %s", exc)
+            return {}
+        finally:
+            await browser.close()
+
+
+async def render_optimal_report(
+    render_kwargs: dict[str, Any],
+    plugin_version: str,
+) -> tuple[str, bytes]:
+    """两遍渲染：第一遍测真实高度，第二遍最优分箱，返回 (html, png)。"""
+
+    # ── 第一遍：用预估高度生成初始布局 ──
+    html_pass1 = render_report_html(plugin_version=plugin_version, **render_kwargs)
+
+    # ── 测量真实高度 ──
+    heights = await measure_section_heights(html_pass1)
+    if heights:
+        logger.info("测得模块高度: %s", heights)
+
+    # ── 第二遍：用真实高度重新排布 ──
+    html_pass2 = render_report_html(
+        plugin_version=plugin_version,
+        measured_heights=heights or None,
+        **render_kwargs,
+    )
+
+    # ── 截图 ──
+    png = await html_to_png(html_pass2)
+    return html_pass2, png
