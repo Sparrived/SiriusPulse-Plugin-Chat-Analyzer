@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+  background: linear-gradient(135deg, #fff0f5 0%, #ffe4ec 50%, #ffd1e0 100%);
+  color: #5a4a5a;
+  padding: 12px;
+}
+.card {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: rgba(255,255,255,0.95);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(255,182,193,0.3);
+  overflow: hidden;
+}
+.header {
+  text-align: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px dashed #ffc2d1;
+}
+.header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #ff6b9d;
+  margin-bottom: 4px;
+}
+.header .subtitle {
+  font-size: 12px;
+  color: #a98899;
+}
+
+/* 行容器 */
+.row {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+  align-items: start;
+}
+
+/* 第一行：排名 — 3列自适应 */
+.row-rankings {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* 第二行：事件链 — 单列占满 */
+.row-events {
+  grid-template-columns: 1fr;
+}
+
+/* 第三行：群聊总结 + 时段活跃度 — 2列 */
+.row-bottom {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.section {
+  background: #fff8fb;
+  border-radius: 14px;
+  padding: 12px;
+  border: 1px solid #ffe4ec;
+  margin-bottom: 0;
+}
+.section h2 {
+  font-size: 14px;
+  color: #ff6b9d;
+  margin-bottom: 10px;
+  padding: 6px 0 6px 12px;
+  border-left: 4px solid #ff6b9d;
+  border-bottom: 1px solid #ffe4ec;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(90deg, rgba(255,107,157,0.06) 0%, rgba(255,107,157,0) 100%);
+  border-radius: 0 8px 8px 0;
+  letter-spacing: 0.5px;
+}
+
+/* 排名字卡 */
+.ranking {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.top-three {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+.rank-card {
+  flex: 1;
+  min-width: 70px;
+  max-width: 150px;
+  background: #fff5f8;
+  border-radius: 10px;
+  padding: 8px 4px;
+  text-align: center;
+  border: 2px solid #ffc2d1;
+  transition: transform 0.2s;
+}
+.rank-card:hover { transform: translateY(-2px); }
+.rank-card.gold { border-color: #ffd700; background: linear-gradient(135deg, #fff9e6, #fff5d6); }
+.rank-card.silver { border-color: #c0c0c0; background: linear-gradient(135deg, #f8f8f8, #f0f0f0); }
+.rank-card.bronze { border-color: #cd7f32; background: linear-gradient(135deg, #fff5eb, #ffe4d6); }
+.rank-num { font-size: 18px; font-weight: 800; margin-bottom: 2px; }
+.rank-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 2px solid #ffc2d1; margin: 2px auto;
+  object-fit: cover;
+}
+.rank-avatar-default {
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #ffe4ec, #ffc2d1);
+  font-size: 16px;
+}
+.others-avatar-default {
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #ffe4ec, #ffc2d1);
+  font-size: 11px;
+}
+.rank-num.gold { color: #ffd700; }
+.rank-num.silver { color: #c0c0c0; }
+.rank-num.bronze { color: #cd7f32; }
+.rank-name {
+  font-size: 11px;
+  color: #6a5a6a;
+  margin-bottom: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rank-count { font-size: 10px; color: #9a8a9a; }
+
+.others-list {
+  background: #fff8fb;
+  border-radius: 8px;
+  padding: 6px;
+  border: 1px dashed #ffc2d1;
+}
+.others-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0;
+  font-size: 11px;
+  border-bottom: 1px dotted #ffe4ec;
+}
+.others-item:last-child { border-bottom: none; }
+.others-item .rank { color: #ff7aa2; font-weight: 600; min-width: 24px; }
+.others-avatar {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid #ffc2d1; margin: 0 6px;
+  object-fit: cover;
+}
+.others-item .name { color: #6a5a6a; flex: 1; }
+.others-item .count { color: #9a8a9a; }
+
+/* 时段活跃度 */
+.hourly-section {
+  background: #fff8fb;
+  border-radius: 14px;
+  padding: 12px;
+  border: 1px solid #ffe4ec;
+}
+.hourly-section h2 {
+  font-size: 14px;
+  color: #ff6b9d;
+  margin-bottom: 10px;
+  padding: 6px 0 6px 12px;
+  border-left: 4px solid #ff6b9d;
+  border-bottom: 1px solid #ffe4ec;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(90deg, rgba(255,107,157,0.06) 0%, rgba(255,107,157,0) 100%);
+  border-radius: 0 8px 8px 0;
+  letter-spacing: 0.5px;
+}
+.hourly-peeps {
+  display: flex;
+  gap: 0;
+  align-items: flex-end;
+  margin-bottom: 2px;
+  min-height: 36px;
+}
+.hourly-peep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1px;
+  overflow: hidden;
+}
+.hourly-peep-avatar {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid #ffc2d1;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.hourly-peep-name {
+  font-size: 7px;
+  color: #b898a8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: center;
+  line-height: 1.1;
+}
+.hourly-bar {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+  height: 24px;
+  margin-bottom: 4px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.hourly-col { transition: opacity 0.2s; }
+.hourly-col:hover { opacity: 0.8; }
+.hourly-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  color: #b898a8;
+}
+
+/* 事件链 */
+.events-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.event-card {
+  background: linear-gradient(135deg, #fff8fb, #fff);
+  border: 1px solid #ffc2d1;
+  border-radius: 10px;
+  padding: 8px;
+}
+.event-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.event-rank {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: #ff6b9d;
+  border-radius: 4px;
+  padding: 2px 8px;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+.event-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #5a4a5a;
+}
+.event-meta-line {
+  display: flex;
+  gap: 10px;
+  font-size: 10px;
+  color: #b898a8;
+  margin-bottom: 4px;
+}
+.event-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.event-tag {
+  font-size: 9px;
+  color: #ff7aa2;
+  background: #fff0f5;
+  border: 1px solid #ffc2d1;
+  border-radius: 8px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+.event-flow {
+  font-size: 11px;
+  line-height: 1.7;
+  color: #6a5a6a;
+  padding: 6px;
+  background: #fff8fb;
+  border-radius: 8px;
+  border: 1px dashed #ffc2d1;
+}
+.event-samples {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.event-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.event-msg-avatar {
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 2px solid #ffc2d1;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.event-msg-content {
+  flex: 1;
+  min-width: 0;
+}
+.event-msg-nick {
+  font-size: 10px;
+  font-weight: 600;
+  color: #ff7aa2;
+  margin-bottom: 2px;
+  display: block;
+}
+.event-msg-text {
+  font-size: 10px;
+  color: #7a6a7a;
+  line-height: 1.4;
+  word-wrap: break-word;
+  word-break: break-all;
+}
+
+/* 复读金句 */
+.echoes-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.echo-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff8fb;
+  border: 1px dashed #ffc2d1;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+.echo-rank {
+  font-size: 18px;
+  font-weight: 800;
+  color: #ff6b9d;
+  flex-shrink: 0;
+  min-width: 24px;
+}
+.echo-text {
+  font-size: 12px;
+  color: #5a4a5a;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.echo-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.echo-count {
+  font-size: 9px;
+  color: #ff7aa2;
+  white-space: nowrap;
+}
+.echo-avatars {
+  display: flex;
+  gap: 2px;
+}
+.echo-avatar-wrap {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid #ffc2d1;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.echo-avatar {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+
+/* 群聊总结 */
+.commentary-section {
+  background: linear-gradient(135deg, #fff0f5, #ffeaf1);
+  border-radius: 14px;
+  padding: 12px;
+  border: 1px solid #ffc2d1;
+}
+.commentary-section h2 {
+  font-size: 14px;
+  color: #ff6b9d;
+  margin-bottom: 10px;
+  padding: 6px 0 6px 12px;
+  border-left: 4px solid #ff6b9d;
+  border-bottom: 1px solid #ffe4ec;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(90deg, rgba(255,107,157,0.06) 0%, rgba(255,107,157,0) 100%);
+  border-radius: 0 8px 8px 0;
+  letter-spacing: 0.5px;
+}
+.commentary {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #7a6a7a;
+}
+.commentary .name { color: #ff6b9d; font-weight: 600; }
+
+/* 内嵌用户小卡片 */
+.inline-user-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: linear-gradient(135deg, #fff0f5, #ffeaf1);
+  border: 1px solid #ffc2d1;
+  border-radius: 12px;
+  padding: 1px 6px 1px 2px;
+  margin: 0 2px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.inline-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid #ffb8c8;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.inline-name {
+  font-size: 11px;
+  color: #ff6b9d;
+  font-weight: 600;
+}
+
+/* 页脚 */
+.footer {
+  text-align: center;
+  font-size: 10px;
+  color: #b898a8;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed #ffc2d1;
+}
+.footer span { color: #d8b8c8; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <h1>🌸 群聊分析报告 🌸</h1>
+    <div class="subtitle">{{group_name}} ({{group_id}}) · {{time_range}}</div>
+  </div>
+
+  <!-- 第一行：各种排名 -->
+  <div class="row row-rankings">
+    {{rankings_html}}
+  </div>
+
+  <!-- 第二行：事件链 -->
+  <div class="row row-events">
+    {{events_html}}
+  </div>
+
+  <!-- 复读金句 -->
+  <div class="row row-events">
+    {{echoes_html}}
+  </div>
+
+  <!-- 第三行：时段活跃度 -->
+  <div class="row row-events">
+    <div class="hourly-section">
+      <h2>⏰ 时段活跃度</h2>
+      <div class="hourly-peeps">{{hourly_peeps}}</div>
+      <div class="hourly-bar">{{hourly_bars}}</div>
+      <div class="hourly-labels">{{hourly_labels}}</div>
+    </div>
+  </div>
+
+  <!-- 第四行：群聊总结 -->
+  <div class="row row-events">
+    <div class="commentary-section">
+      <h2>📝 群聊总结</h2>
+      <div class="commentary">{{commentary_html}}</div>
+    </div>
+  </div>
+
+
+
+  <div class="footer">
+    <span>ChatAnalyzer v{{plugin_version}}</span> · <span>Sirius Chat Plugin</span>
+    <br><span>生成于 {{generated_at}}</span>
+  </div>
+</div>
+</body>
+</html>
