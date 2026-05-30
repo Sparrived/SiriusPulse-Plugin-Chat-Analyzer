@@ -470,15 +470,17 @@ def build_social_graph_html(
         user_activity[pair["user_b"]] += pair["count"]
     max_activity = max(user_activity.values()) if user_activity else 1
 
-    # 扁平布局参数
-    svg_w, svg_h = 700, 320
+    # 动态布局参数：根据节点数调整画布大小
+    n = min(n, 12)  # 最多显示 12 个节点
+    svg_w = max(500, min(800, 300 + n * 40))
+    svg_h = max(280, min(400, 200 + n * 20))
     cx, cy = svg_w / 2, svg_h / 2
 
-    # 均匀椭圆布局 + 微扰动
+    # 均匀椭圆布局
     import math
 
-    rx = cx - 70
-    ry = cy - 60
+    rx = cx - 60
+    ry = cy - 50
 
     positions: list[tuple[float, float]] = []
     for i in range(n):
@@ -495,8 +497,8 @@ def build_social_graph_html(
     edge_parts: list[str] = []
     node_parts: list[str] = []
 
-    # 画连线（贝塞尔曲线）
-    for idx, pair in enumerate(social_pairs[:8]):
+    # 画连线（贝塞尔曲线）— 全部关系
+    for idx, pair in enumerate(social_pairs):
         a_uid = pair["user_a"]
         b_uid = pair["user_b"]
         count = pair["count"]

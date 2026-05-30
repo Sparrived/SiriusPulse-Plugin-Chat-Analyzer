@@ -618,6 +618,25 @@ class ChatAnalyzerPlugin(PluginBase):
                 return uid
         return ""
 
+    @staticmethod
+    def _read_bot_qq_from_config(engine: Any) -> str:
+        """从人格 adapters.json 配置中读取机器人 QQ 号（WebUI 设置的 qq_number）。"""
+        work_path = getattr(engine, "work_path", None)
+        if not work_path:
+            return ""
+        adapters_path = Path(work_path) / "adapters.json"
+        if not adapters_path.exists():
+            return ""
+        try:
+            data = json.loads(adapters_path.read_text(encoding="utf-8"))
+            for adapter_cfg in data.get("adapters", []):
+                qq = str(adapter_cfg.get("qq_number", ""))
+                if qq and qq.isdigit() and 5 <= len(qq) <= 11:
+                    return qq
+        except Exception:
+            pass
+        return ""
+
     async def _resolve_nickname(
         self, group_id: str, user_id: str, adapter: Any,
     ) -> str:
@@ -683,20 +702,25 @@ class ChatAnalyzerPlugin(PluginBase):
 
         adapter = self.ctx.adapter
 
-        # 通过 adapter.get_login_info() 获取机器人的 QQ 号
-        self_uid = ""
-        try:
-            login_info = await adapter.get_login_info()
-            if login_info:
-                self_uid = str(login_info.get("user_id", "") or "")
-                bot_nickname = login_info.get("nickname", "")
-                if self_uid and bot_nickname:
-                    uid_to_name[self_uid] = bot_nickname
-        except Exception as exc:
-            logger.debug("获取机器人登录信息失败: %s", exc)
-            self_uid = ""
+        # 获取机器人 QQ 号：优先从 adapters.json 配置读取（WebUI 设置）
+        self_uid = self._read_bot_qq_from_config(self._get_engine())
+        if self_uid:
+            logger.debug("从 adapters.json 读取到机器人 QQ 号: %s", self_uid)
 
-        # 如果 get_login_info 失败，尝试从消息数据中查找机器人的 QQ 号
+        # 回退：通过 adapter.get_login_info() API 获取
+        if not self_uid:
+            try:
+                login_info = await adapter.get_login_info()
+                if login_info:
+                    self_uid = str(login_info.get("user_id", "") or "")
+                    bot_nickname = login_info.get("nickname", "")
+                    if self_uid and bot_nickname:
+                        uid_to_name[self_uid] = bot_nickname
+            except Exception as exc:
+                logger.debug("获取机器人登录信息失败: %s", exc)
+                self_uid = ""
+
+        # 最终回退：从消息数据中查找
         if not self_uid or not (self_uid.isdigit() and 5 <= len(self_uid) <= 11):
             bot_qq = self._find_bot_qq(messages, uid_to_name)
             if bot_qq:
@@ -747,6 +771,7 @@ class ChatAnalyzerPlugin(PluginBase):
         commentary = await self._generate_commentary(
             sentiment, rankings, messages, start_time, end_time,
             uid_to_name, top_events, group_id, dynamics, vocab,
+            self_uid=self_uid,
         )
 
         # ── 汇总报告 ──
@@ -787,7 +812,7 @@ class ChatAnalyzerPlugin(PluginBase):
             "bursts": bursts,
             "avg_response_sec": dynamics.avg_response_time(),
             "sentiment_stats": sentiment.overall_stats(),
-            "social_pairs": social_graph.top_pairs(6),
+            "social_pairs": social_graph.top_pairs(),
             "word_cloud": vocab.global_word_cloud(15),
             "vocab_rich": vocab.top_rich_users(min_msgs=5, top_n=5),
             "content_dist": content_cls.distribution(),
@@ -1118,6 +1143,7 @@ class ChatAnalyzerPlugin(PluginBase):
         group_id: str,
         dynamics: ConversationDynamics,
         vocab: VocabRichness,
+        self_uid: str = "",
     ) -> str:
         participant_map: dict[str, str] = {}
         for entries in rankings.values():
@@ -1229,13 +1255,11 @@ class ChatAnalyzerPlugin(PluginBase):
             result = await self.ctx.engine.generate_text(prompt)
             if result:
                 commentary = result.strip()
-                # 获取机器人的 uid 和名称，用于转换 <assistant> 标签
-                adapter = self.ctx.adapter
-                bot_uid = str(getattr(adapter, "self_id", "") or "")
-                bot_name = uid_to_name.get(bot_uid, "")
+                # 使用传入的 self_uid 转换 <assistant> 标签
+                bot_name = uid_to_name.get(self_uid, "") or persona_name
                 commentary = self._sanitize_commentary(
                     commentary, participant_map,
-                    bot_uid=bot_uid, bot_name=bot_name,
+                    bot_uid=self_uid, bot_name=bot_name,
                 )
                 return commentary
         except Exception as exc:
