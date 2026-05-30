@@ -374,6 +374,20 @@ class ChatAnalyzerPlugin(PluginBase):
             return []
 
     @staticmethod
+    def _resolve_user_id(entry: dict[str, Any]) -> str:
+        """从归档条目中提取平台用户 ID（QQ 号）。
+
+        优先使用 channel_user_id（平台原始 ID），回退到 user_id。
+        engine 的 user_id 可能是内部 UUID，不是 QQ 号。
+        """
+        return entry.get("channel_user_id", "") or entry.get("user_id", "")
+
+    @staticmethod
+    def _resolve_user_id_from_obj(entry: Any) -> str:
+        """从 BasicMemoryEntry 对象中提取平台用户 ID。"""
+        return getattr(entry, "channel_user_id", "") or getattr(entry, "user_id", "")
+
+    @staticmethod
     def _normalize_entry(entry: dict[str, Any]) -> dict[str, Any] | None:
         """将 JSONL 归档条目规范化为分析器可用的消息格式。"""
         ts = ChatAnalyzerPlugin._parse_iso_timestamp(entry.get("timestamp", ""))
@@ -381,7 +395,7 @@ class ChatAnalyzerPlugin(PluginBase):
             return None
 
         return {
-            "user_id": entry.get("user_id", ""),
+            "user_id": ChatAnalyzerPlugin._resolve_user_id(entry),
             "content": entry.get("content", ""),
             "time": ts,
             "speaker_name": entry.get("speaker_name", ""),
@@ -398,7 +412,7 @@ class ChatAnalyzerPlugin(PluginBase):
             return None
 
         return {
-            "user_id": getattr(entry, "user_id", ""),
+            "user_id": ChatAnalyzerPlugin._resolve_user_id_from_obj(entry),
             "content": getattr(entry, "content", ""),
             "time": ts,
             "speaker_name": getattr(entry, "speaker_name", ""),
