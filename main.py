@@ -133,7 +133,7 @@ class ChatAnalyzerPlugin(PluginBase):
         """从配置管理器加载屏蔽词配置。"""
         try:
             # 优先从 data_store 读取（WebUI 表单配置）
-            if hasattr(self, 'ctx') and hasattr(self.ctx, 'data_store'):
+            if hasattr(self, 'ctx') and hasattr(self.ctx, 'data_store') and self.ctx.data_store is not None:
                 blocked_words = self.ctx.data_store.get("blocked_words", [])
                 if isinstance(blocked_words, list) and blocked_words:
                     self._blocked_words = set(blocked_words)
